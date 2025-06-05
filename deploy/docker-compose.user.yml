@@ -1,0 +1,49 @@
+services:
+  user-service:
+    build:
+      context: ../
+      dockerfile: user-service/Dockerfile
+    container_name: user-service
+    restart: unless-stopped
+    depends_on:
+      - user-db
+      - user-redis
+    env_file:
+      - ./envs/user.env
+    ports:
+      - "${HTTP_EXTERNAL_PORT}:${HTTP_PORT}"
+    networks:
+      - backend
+
+  user-db:
+    image: postgres:15
+    container_name: user-db
+    restart: unless-stopped
+    env_file:
+      - ./envs/user.env
+    ports:
+      - "${DB_EXTERNAL_PORT}:5432"
+    volumes:
+      - user_db_data:/var/lib/postgresql/data
+    networks:
+      - backend
+
+  user-redis:
+    image: redis:7
+    container_name: user-redis
+    restart: unless-stopped
+    env_file:
+      - ./envs/user.env
+    ports:
+      - "${REDIS_EXTERNAL_PORT}:6379"
+    volumes:
+      - user_redis_data:/data
+    networks:
+      - backend
+
+volumes:
+  user_db_data:
+  user_redis_data:
+
+networks:
+  backend:

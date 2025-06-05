@@ -1,0 +1,34 @@
+services:
+  catalog-service:
+    build:
+      context: ../
+      dockerfile: catalog-service/Dockerfile
+    container_name: catalog-service
+    restart: unless-stopped
+    depends_on:
+      - catalog-db
+    env_file:
+      - ./envs/catalog.env
+    ports:
+      - "${HTTP_EXTERNAL_PORT}:${HTTP_PORT}"
+    networks:
+      - backend
+
+  catalog-db:
+    image: postgres:15
+    container_name: catalog-db
+    restart: unless-stopped
+    env_file:
+      - ./envs/catalog.env
+    ports:
+      - "${DB_EXTERNAL_PORT}:5432"
+    volumes:
+      - catalog_db_data:/var/lib/postgresql/data
+    networks:
+      - backend
+
+volumes:
+  catalog_db_data:
+
+networks:
+  backend:
