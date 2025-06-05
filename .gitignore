@@ -1,0 +1,29 @@
+# === Go binaries ===
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# === Go build artifacts ===
+/bin/
+/coverage/
+
+# === IDE files ===
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+.DS_Store
+
+# === Docker related ===
+*.tar
+*.log
+docker-compose.override.yml
+
+# === Env files ===
+*.env
+**/*.env
