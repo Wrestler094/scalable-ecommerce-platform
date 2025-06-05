@@ -1,0 +1,32 @@
+package http
+
+import (
+	"net/http"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+)
+
+type Handlers struct {
+	UserHandler *UserHandler
+}
+
+func NewRouter(h Handlers) http.Handler {
+	r := chi.NewRouter()
+
+	// Middlewares
+	r.Use(middleware.Recoverer)
+
+	// API namespace
+	r.Route("/api", func(r chi.Router) {
+		// User auth routes
+		r.Route("/auth", func(r chi.Router) {
+			r.Post("/register", h.UserHandler.Register)
+			r.Post("/login", h.UserHandler.Login)
+			r.Post("/refresh", h.UserHandler.Refresh)
+			r.Post("/logout", h.UserHandler.Logout)
+		})
+	})
+
+	return r
+}
