@@ -59,19 +59,19 @@ func Run(cfg *config.Config) {
 	redisCache := cache.NewRedisCache(rdb.Client)
 
 	// Repository
-	authRepo := postgres.NewUserRepository(pg.DB)
-	cashedAuthRepo := postgres.NewCachedUserRepository(authRepo, redisCache)
+	userRepo := postgres.NewUserRepository(pg.DB)
+	cashedUserRepo := postgres.NewCachedUserRepository(userRepo, redisCache)
 	refreshRepo := redisinfra.NewRefreshTokenRepository(rdb.Client)
 
 	// Use-Case
-	authUseCase := usecase.NewUserUseCase(cashedAuthRepo, refreshRepo, tokenManager, passwordHasher)
+	userUseCase := usecase.NewUserUseCase(cashedUserRepo, refreshRepo, tokenManager, passwordHasher)
 
 	// Handlers
-	authHandler := http.NewUserHandler(authUseCase, httpValidator)
+	userHandler := http.NewUserHandler(userUseCase, httpValidator)
 
 	// Router
 	router := http.NewRouter(http.Handlers{
-		UserHandler: authHandler,
+		UserHandler: userHandler,
 	})
 
 	// HTTP Server
