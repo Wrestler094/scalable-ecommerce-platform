@@ -3,7 +3,7 @@ package postgres
 import (
 	"context"
 
-	"pkg/roles"
+	"pkg/authenticator"
 	"user-service/internal/domain"
 	"user-service/internal/infrastructure/postgres/dao"
 
@@ -50,7 +50,7 @@ func (r *userRepository) GetUserByEmail(ctx context.Context, email string) (*dom
 		User: domain.User{
 			ID:    user.ID,
 			Email: user.Email,
-			Role:  roles.Role(user.Role),
+			Role:  authenticator.Role(user.Role),
 		},
 		Password: domain.HashedPassword(user.PasswordHash),
 	}
@@ -73,7 +73,7 @@ func (r *userRepository) GetByID(ctx context.Context, id int64) (*domain.User, e
 	outputUser := domain.User{
 		ID:    user.ID,
 		Email: user.Email,
-		Role:  roles.Role(user.Role),
+		Role:  authenticator.Role(user.Role),
 	}
 
 	return &outputUser, nil

@@ -6,7 +6,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"pkg/authenticator"
-	"pkg/roles"
 )
 
 type Handlers struct {
@@ -53,14 +52,14 @@ func NewRouter(h Handlers, authenticatorImpl authenticator.Authenticator) http.H
 
 func adminOnly(auth authenticator.Authenticator, handler func(r chi.Router)) func(r chi.Router) {
 	return func(r chi.Router) {
-		r.Use(authenticator.RequireRoles(auth, roles.Admin))
+		r.Use(authenticator.RequireRoles(auth, authenticator.Admin))
 		handler(r)
 	}
 }
 
 func authorizedOnly(auth authenticator.Authenticator, handler func(r chi.Router)) func(r chi.Router) {
 	return func(r chi.Router) {
-		r.Use(authenticator.RequireRoles(auth, roles.User, roles.Admin))
+		r.Use(authenticator.RequireRoles(auth, authenticator.User, authenticator.Admin))
 		handler(r)
 	}
 }

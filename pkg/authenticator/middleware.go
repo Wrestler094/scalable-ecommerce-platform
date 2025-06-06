@@ -5,8 +5,8 @@ import (
 	"strings"
 )
 
-func RequireRoles(v Authenticator, allowedRoles ...string) func(http.Handler) http.Handler {
-	roleSet := make(map[string]struct{}, len(allowedRoles))
+func RequireRoles(v Authenticator, allowedRoles ...Role) func(http.Handler) http.Handler {
+	roleSet := make(map[Role]struct{}, len(allowedRoles))
 	for _, r := range allowedRoles {
 		roleSet[r] = struct{}{}
 	}
@@ -20,18 +20,23 @@ func RequireRoles(v Authenticator, allowedRoles ...string) func(http.Handler) ht
 			}
 
 			token := strings.TrimPrefix(authHeader, "Bearer ")
-			_, role, err := v.Validate(token)
+			userID, roleStr, err := v.Validate(token)
+
 			if err != nil {
 				http.Error(w, "invalid token", http.StatusUnauthorized)
 				return
 			}
 
+			role := Role(roleStr)
 			if _, ok := roleSet[role]; !ok {
 				http.Error(w, "forbidden", http.StatusForbidden)
 				return
 			}
 
-			next.ServeHTTP(w, r)
+			ctx := WithUserID(r.Context(), userID)
+			ctx = WithUserRole(ctx, role)
+
+			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
 }

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"pkg/roles"
+	"pkg/authenticator"
 	"user-service/internal/domain"
 )
 
@@ -46,7 +46,7 @@ func (uc *userUseCase) Register(ctx context.Context, email, rawPassword string) 
 	user := domain.UserWithPassword{
 		User: domain.User{
 			Email: email,
-			Role:  roles.User,
+			Role:  authenticator.User,
 		},
 		Password: domain.HashedPassword(hashedPassword),
 	}

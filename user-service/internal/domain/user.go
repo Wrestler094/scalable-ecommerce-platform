@@ -3,14 +3,14 @@ package domain
 import (
 	"context"
 
-	"pkg/roles"
+	"pkg/authenticator"
 )
 
 // User представляет публичного пользователя, безопасного для отдачи в API или кеширования.
 type User struct {
 	ID    int64
 	Email string
-	Role  roles.Role
+	Role  authenticator.Role
 }
 
 // HashedPassword — отдельный тип для хранения хэша пароля, чтобы избежать случайного использования.
