@@ -24,7 +24,17 @@ catalog-up:
 catalog-down:
 	docker compose -f $(CATALOG_COMPOSE) --env-file $(CATALOG_ENV) down
 
-# === ALL SERVICES ===
-all-up: user-up catalog-up
+# === CART SERVICE ===
+CART_COMPOSE := $(COMPOSE_DIR)/docker-compose.cart.yml
+CART_ENV := $(ENV_DIR)/cart.env
 
-all-down: user-down catalog-down
+cart-up:
+	docker compose -f $(CART_COMPOSE) --env-file $(CART_ENV) up -d --build
+
+cart-down:
+	docker compose -f $(CART_COMPOSE) --env-file $(CART_ENV) down
+
+# === ALL SERVICES ===
+all-up: user-up catalog-up cart-up
+
+all-down: user-down catalog-down cart-down
