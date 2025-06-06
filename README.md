@@ -26,7 +26,7 @@ scalable-ecommerce-platform/
 │       ├── user.env
 │       ├── catalog.env
 │       └── cart.env
-├── user-service/                    # Сервис пользователей (JWT, Redis)
+├── user-service/                    # Сервис пользователей (PostgreSQL, Redis)
 ├── catalog-service/                 # Сервис каталога (PostgreSQL)
 └── cart-service/                    # Сервис корзины (Redis)
 ```
@@ -67,10 +67,16 @@ make catalog-up
 # Остановить catalog-service
 make catalog-down
 
-# Запустить оба сервиса
+# Запустить только cart-service
+make cart-up
+
+# Остановить cart-service
+make cart-down
+
+# Запустить все сервисы
 make all-up
 
-# Остановить оба сервиса
+# Остановить все сервисы
 make all-down
 ```
 
