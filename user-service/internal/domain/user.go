@@ -35,7 +35,7 @@ type TokenManager interface {
 type UserRepository interface {
 	CreateUser(ctx context.Context, user UserWithPassword) (int64, error)
 	GetUserByEmail(ctx context.Context, email string) (*UserWithPassword, error)
-	GetByID(ctx context.Context, id int64) (*User, error)
+	GetUserByID(ctx context.Context, id int64) (*User, error)
 }
 
 type RefreshTokenRepository interface {

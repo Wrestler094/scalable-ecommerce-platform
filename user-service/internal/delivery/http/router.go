@@ -15,6 +15,7 @@ func NewRouter(h Handlers) http.Handler {
 	r := chi.NewRouter()
 
 	// Middlewares
+	r.Use(middleware.RequestID)
 	r.Use(middleware.Recoverer)
 
 	// API namespace

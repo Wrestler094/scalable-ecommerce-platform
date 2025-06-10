@@ -3,9 +3,12 @@ package postgres
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strconv"
 	"time"
 
+	"github.com/go-chi/chi/v5/middleware"
+	"pkg/logger"
 	"user-service/internal/domain"
 
 	"pkg/cache"
@@ -18,14 +21,16 @@ type cachedUserRepository struct {
 	cache       cache.Cache
 	cacheTTL    time.Duration
 	cachePrefix string
+	logger      logger.Logger
 }
 
-func NewCachedUserRepository(dbRepo domain.UserRepository, c cache.Cache) domain.UserRepository {
+func NewCachedUserRepository(dbRepo domain.UserRepository, c cache.Cache, logger logger.Logger) domain.UserRepository {
 	return &cachedUserRepository{
 		dbRepo:      dbRepo,
 		cache:       c,
 		cacheTTL:    60 * time.Minute,
 		cachePrefix: "USER:",
+		logger:      logger,
 	}
 }
 
@@ -37,7 +42,9 @@ func (r *cachedUserRepository) GetUserByEmail(ctx context.Context, email string)
 	return r.dbRepo.GetUserByEmail(ctx, email)
 }
 
-func (r *cachedUserRepository) GetByID(ctx context.Context, id int64) (*domain.User, error) {
+func (r *cachedUserRepository) GetUserByID(ctx context.Context, id int64) (*domain.User, error) {
+	const op = "cachedUserRepository.GetUserByID"
+
 	cacheKey := r.cachePrefix + strconv.FormatInt(id, 10)
 
 	// Попробуем взять из кэша
@@ -47,21 +54,43 @@ func (r *cachedUserRepository) GetByID(ctx context.Context, id int64) (*domain.U
 		if err := json.Unmarshal(data, &user); err == nil {
 			return &user, nil
 		}
+
 		// Если unmarshal не удался — инвалидируем кэш и пробуем из базы
-		// TODO: log warning
+		r.logger.
+			WithOp(op).
+			WithUserID(id).
+			WithRequestID(middleware.GetReqID(ctx)).
+			WithError(err).
+			Warn("failed to unmarshal user from cache", "cache_key", cacheKey)
+
 		_ = r.invalidate(ctx, id)
 	}
 
 	// Из базы
-	user, err := r.dbRepo.GetByID(ctx, id)
+	user, err := r.dbRepo.GetUserByID(ctx, id)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s: failed to get user from DB: %w", op, err)
 	}
 
-	// Кэшируем
 	raw, err := json.Marshal(user)
+	if err != nil {
+		r.logger.
+			WithOp(op).
+			WithUserID(id).
+			WithRequestID(middleware.GetReqID(ctx)).
+			WithError(err).
+			Error("failed to marshal user for cache")
+	}
+
 	if err == nil {
-		_ = r.cache.Set(ctx, cacheKey, raw, r.cacheTTL)
+		if err := r.cache.Set(ctx, cacheKey, raw, r.cacheTTL); err != nil {
+			r.logger.
+				WithOp(op).
+				WithUserID(id).
+				WithRequestID(middleware.GetReqID(ctx)).
+				WithError(err).
+				Error("failed to set user to cache", "cache_key", cacheKey)
+		}
 	}
 
 	return user, nil

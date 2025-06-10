@@ -60,7 +60,7 @@ func Run(cfg *config.Config) {
 
 	// Repository
 	userRepo := postgres.NewUserRepository(pg.DB)
-	cashedUserRepo := postgres.NewCachedUserRepository(userRepo, redisCache)
+	cashedUserRepo := postgres.NewCachedUserRepository(userRepo, redisCache, l)
 	refreshRepo := redisinfra.NewRefreshTokenRepository(rdb.Client)
 
 	// Use-Case

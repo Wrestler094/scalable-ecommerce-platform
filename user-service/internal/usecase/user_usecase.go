@@ -88,7 +88,7 @@ func (uc *userUseCase) Refresh(ctx context.Context, refreshToken string) (string
 		return "", errors.New("invalid or expired refresh token")
 	}
 
-	user, err := uc.userRepo.GetByID(ctx, userID)
+	user, err := uc.userRepo.GetUserByID(ctx, userID)
 	if err != nil {
 		return "", fmt.Errorf("user not found: %w", err)
 	}

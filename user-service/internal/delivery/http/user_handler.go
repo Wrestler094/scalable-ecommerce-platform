@@ -1,7 +1,6 @@
 package http
 
 import (
-	"fmt"
 	"net/http"
 
 	"user-service/internal/delivery/http/dto"
@@ -57,7 +56,6 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	accessToken, refreshToken, err := h.userUC.Login(r.Context(), req.Email, req.Password)
 	if err != nil {
-		fmt.Println(err)
 		httphelper.RespondError(w, http.StatusInternalServerError, "something went wrong")
 		return
 	}
