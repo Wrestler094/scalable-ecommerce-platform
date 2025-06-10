@@ -9,4 +9,10 @@ type Logger interface {
 	Error(msg string, args ...any)
 	Fatal(msg string, args ...any) // Завершает приложение с кодом 1
 	With(args ...any) Logger       // Возвращает логгер с дополнительным контекстом
+
+	// DSL-style методы
+	WithOp(op string) Logger
+	WithRequestID(id string) Logger
+	WithUserID(id int64) Logger
+	WithError(err error) Logger
 }

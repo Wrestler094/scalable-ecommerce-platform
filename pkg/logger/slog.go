@@ -55,6 +55,22 @@ func (l *slogLogger) With(args ...any) Logger {
 	}
 }
 
+func (l *slogLogger) WithOp(op string) Logger {
+	return l.With(LogKeyOp, op)
+}
+
+func (l *slogLogger) WithRequestID(id string) Logger {
+	return l.With(LogKeyRequestID, id)
+}
+
+func (l *slogLogger) WithUserID(id int64) Logger {
+	return l.With(LogKeyUserID, id)
+}
+
+func (l *slogLogger) WithError(err error) Logger {
+	return l.With(LogKeyError, err)
+}
+
 // parseLevel converts a string into a slog.Level.
 func parseLevel(s string) (slog.Level, error) {
 	switch strings.ToLower(s) {
