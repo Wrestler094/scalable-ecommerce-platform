@@ -1,7 +1,7 @@
 services:
   user-service:
     build:
-      context: ../
+      context: ../../
       dockerfile: user-service/Dockerfile
     container_name: user-service
     restart: unless-stopped
@@ -9,7 +9,7 @@ services:
       - user-db
       - user-redis
     env_file:
-      - ./envs/user.env
+      - ./user.env
     ports:
       - "${HTTP_EXTERNAL_PORT}:${HTTP_PORT}"
     networks:
@@ -20,7 +20,7 @@ services:
     container_name: user-db
     restart: unless-stopped
     env_file:
-      - ./envs/user.env
+      - ./user.env
     ports:
       - "${DB_EXTERNAL_PORT}:5432"
     volumes:
@@ -33,7 +33,7 @@ services:
     container_name: user-redis
     restart: unless-stopped
     env_file:
-      - ./envs/user.env
+      - ./user.env
     ports:
       - "${REDIS_EXTERNAL_PORT}:6379"
     volumes:

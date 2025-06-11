@@ -23,7 +23,7 @@ COPY catalog-service/ ./catalog-service/
 # Сборка бинарников
 WORKDIR /app/catalog-service
 RUN CGO_ENABLED=0 GOOS=linux go build -o app ./cmd/app && \
-CGO_ENABLED=0 GOOS=linux go build -o migrator ./cmd/migrator
+    CGO_ENABLED=0 GOOS=linux go build -o migrator ./cmd/migrator
 
 # 2. Финальный минимальный образ
 FROM alpine:latest

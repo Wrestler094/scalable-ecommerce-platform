@@ -1,14 +1,14 @@
 services:
   catalog-service:
     build:
-      context: ../
+      context: ../../
       dockerfile: catalog-service/Dockerfile
     container_name: catalog-service
     restart: unless-stopped
     depends_on:
       - catalog-db
     env_file:
-      - ./envs/catalog.env
+      - ./catalog.env
     ports:
       - "${HTTP_EXTERNAL_PORT}:${HTTP_PORT}"
     networks:
@@ -19,7 +19,7 @@ services:
     container_name: catalog-db
     restart: unless-stopped
     env_file:
-      - ./envs/catalog.env
+      - ./catalog.env
     ports:
       - "${DB_EXTERNAL_PORT}:5432"
     volumes:

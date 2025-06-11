@@ -1,14 +1,14 @@
 services:
   cart-service:
     build:
-      context: ../
+      context: ../../
       dockerfile: cart-service/Dockerfile
     container_name: cart-service
     restart: unless-stopped
     depends_on:
       - cart-redis
     env_file:
-      - ./envs/cart.env
+      - ./cart.env
     ports:
       - "${HTTP_EXTERNAL_PORT}:${HTTP_PORT}"
     networks:
@@ -19,7 +19,7 @@ services:
     container_name: cart-redis
     restart: unless-stopped
     env_file:
-      - ./envs/cart.env
+      - ./cart.env
     ports:
       - "${REDIS_EXTERNAL_PORT}:6379"
     volumes:
