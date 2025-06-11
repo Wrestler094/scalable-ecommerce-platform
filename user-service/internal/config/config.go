@@ -57,9 +57,11 @@ type (
 
 // NewConfig returns app config.
 func NewConfig() (*Config, error) {
+	const op = "config.NewConfig"
+
 	cfg := &Config{}
 	if err := env.Parse(cfg); err != nil {
-		return nil, fmt.Errorf("config error: %w", err)
+		return nil, fmt.Errorf("%s: failed to parse env: %w", op, err)
 	}
 
 	return cfg, nil

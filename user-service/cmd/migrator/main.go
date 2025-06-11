@@ -7,12 +7,15 @@ import (
 	"pkg/migrator"
 )
 
-const defaultPath = "./migrations"
+const (
+	defaultPath = "./migrations"
+	op          = "cmd.migrator"
+)
 
 func main() {
 	dsn := os.Getenv("POSTGRES_URL")
 	if dsn == "" {
-		log.Fatal("missing POSTGRES_URL")
+		log.Fatalf("%s: missing environment variable: POSTGRES_URL", op)
 	}
 
 	path := os.Getenv("MIGRATIONS_PATH")
@@ -20,10 +23,10 @@ func main() {
 		path = defaultPath
 	}
 
-	log.Printf("running migrations from %q", path)
+	log.Printf("%s: running DB migrations from %q ...", op, path)
 
 	if err := migrator.Run(dsn, path); err != nil {
-		log.Fatalf("migration error: %v", err)
+		log.Fatalf("%s: migration error: %v", op, err)
 	}
 
 	log.Println("migrations applied successfully")

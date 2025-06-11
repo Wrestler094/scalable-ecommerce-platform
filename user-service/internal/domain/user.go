@@ -22,14 +22,11 @@ type UserWithPassword struct {
 	Password HashedPassword
 }
 
-type PasswordHasher interface {
-	Hash(password string) (string, error)
-	Compare(hashed, plain string) bool
-}
-
-type TokenManager interface {
-	GenerateAccessToken(userID int64, role string) (string, error)
-	GenerateRefreshToken() (string, error)
+type UserUseCase interface {
+	Register(ctx context.Context, email, rawPassword string) (int64, error)
+	Login(ctx context.Context, email, rawPassword string) (string, string, error)
+	Refresh(ctx context.Context, refreshToken string) (string, error)
+	Logout(ctx context.Context, refreshToken string) error
 }
 
 type UserRepository interface {
@@ -43,4 +40,14 @@ type RefreshTokenRepository interface {
 	GetUserID(ctx context.Context, token string) (int64, error)
 	Delete(ctx context.Context, token string) error
 	Replace(ctx context.Context, oldToken string, newToken string, userID int64) error
+}
+
+type PasswordHasher interface {
+	Hash(password string) (string, error)
+	Compare(hashed, plain string) (bool, error)
+}
+
+type TokenManager interface {
+	GenerateAccessToken(userID int64, role string) (string, error)
+	GenerateRefreshToken() (string, error)
 }

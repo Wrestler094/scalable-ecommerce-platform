@@ -16,6 +16,8 @@ import (
 
 var _ domain.UserRepository = (*userRepository)(nil)
 
+const pgErrCodeUniqueViolation = "23505"
+
 type userRepository struct {
 	db *sqlx.DB
 }
@@ -37,7 +39,7 @@ func (r *userRepository) CreateUser(ctx context.Context, user domain.UserWithPas
 	err := r.db.QueryRowContext(ctx, query, user.Email, user.Password, user.Role).Scan(&id)
 	if err != nil {
 		var pqErr *pq.Error
-		if errors.As(err, &pqErr) && pqErr.Code == "23505" {
+		if errors.As(err, &pqErr) && pqErr.Code == pgErrCodeUniqueViolation {
 			return 0, fmt.Errorf("%s: failed to insert user: %w", op, domain.ErrUserAlreadyExists)
 		}
 		return 0, fmt.Errorf("%s: failed to insert user: %w", op, err)

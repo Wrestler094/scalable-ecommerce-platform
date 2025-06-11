@@ -45,6 +45,8 @@ func (r *cachedUserRepository) GetUserByEmail(ctx context.Context, email string)
 func (r *cachedUserRepository) GetUserByID(ctx context.Context, id int64) (*domain.User, error) {
 	const op = "cachedUserRepository.GetUserByID"
 
+	log := r.logger.WithOp(op).WithUserID(id).WithRequestID(middleware.GetReqID(ctx))
+
 	cacheKey := r.cachePrefix + strconv.FormatInt(id, 10)
 
 	// Попробуем взять из кэша
@@ -56,14 +58,11 @@ func (r *cachedUserRepository) GetUserByID(ctx context.Context, id int64) (*doma
 		}
 
 		// Если unmarshal не удался — инвалидируем кэш и пробуем из базы
-		r.logger.
-			WithOp(op).
-			WithUserID(id).
-			WithRequestID(middleware.GetReqID(ctx)).
-			WithError(err).
-			Warn("failed to unmarshal user from cache", "cache_key", cacheKey)
+		log.WithError(err).Warn("failed to unmarshal user from cache", "cache_key", cacheKey)
 
-		_ = r.invalidate(ctx, id)
+		if err := r.invalidate(ctx, id); err != nil {
+			log.WithError(err).Warn("failed to invalidate user cache", "cache_key", cacheKey)
+		}
 	}
 
 	// Из базы
@@ -74,22 +73,12 @@ func (r *cachedUserRepository) GetUserByID(ctx context.Context, id int64) (*doma
 
 	raw, err := json.Marshal(user)
 	if err != nil {
-		r.logger.
-			WithOp(op).
-			WithUserID(id).
-			WithRequestID(middleware.GetReqID(ctx)).
-			WithError(err).
-			Error("failed to marshal user for cache")
+		log.WithError(err).Error("failed to marshal user for cache")
 	}
 
 	if err == nil {
 		if err := r.cache.Set(ctx, cacheKey, raw, r.cacheTTL); err != nil {
-			r.logger.
-				WithOp(op).
-				WithUserID(id).
-				WithRequestID(middleware.GetReqID(ctx)).
-				WithError(err).
-				Error("failed to set user to cache", "cache_key", cacheKey)
+			log.WithError(err).Error("failed to set user to cache", "cache_key", cacheKey)
 		}
 	}
 
@@ -97,5 +86,12 @@ func (r *cachedUserRepository) GetUserByID(ctx context.Context, id int64) (*doma
 }
 
 func (r *cachedUserRepository) invalidate(ctx context.Context, id int64) error {
-	return r.cache.Delete(ctx, r.cachePrefix+strconv.FormatInt(id, 10))
+	const op = "cachedUserRepository.invalidate"
+
+	cacheKey := r.cachePrefix + strconv.FormatInt(id, 10)
+	if err := r.cache.Delete(ctx, cacheKey); err != nil {
+		return fmt.Errorf("%s: failed to delete cache: %w", op, err)
+	}
+
+	return nil
 }

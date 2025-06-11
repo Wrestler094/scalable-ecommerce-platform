@@ -31,41 +31,64 @@ func (r *RefreshTokenRepository) key(userID int64, token string) string {
 }
 
 func (r *RefreshTokenRepository) Store(ctx context.Context, userID int64, token string) error {
+	const op = "RefreshTokenRepository.Store"
+
 	key := r.key(userID, token)
-	return r.client.Set(ctx, key, userID, r.defaultTTL).Err()
+	if err := r.client.Set(ctx, key, userID, r.defaultTTL).Err(); err != nil {
+		return fmt.Errorf("%s: failed to set refresh token: %w", op, err)
+	}
+
+	return nil
 }
 
 func (r *RefreshTokenRepository) GetUserID(ctx context.Context, token string) (int64, error) {
+	const op = "RefreshTokenRepository.GetUserID"
+
 	iter := r.client.Scan(ctx, 0, fmt.Sprintf("%s:*:%s", r.prefix, token), 1).Iterator()
 	for iter.Next(ctx) {
 		key := iter.Val()
-		return r.client.Get(ctx, key).Int64()
+		userID, err := r.client.Get(ctx, key).Int64()
+		if err != nil {
+			return 0, fmt.Errorf("%s: failed to get user ID: %w", op, err)
+		}
+		return userID, nil
 	}
+
 	if err := iter.Err(); err != nil {
-		return 0, err
+		return 0, fmt.Errorf("%s: failed to scan keys: %w", op, err)
 	}
+
 	return 0, redis.Nil
 }
 
 func (r *RefreshTokenRepository) Delete(ctx context.Context, token string) error {
+	const op = "RefreshTokenRepository.Delete"
+
 	iter := r.client.Scan(ctx, 0, fmt.Sprintf("%s:*:%s", r.prefix, token), 1).Iterator()
 	for iter.Next(ctx) {
-		return r.client.Del(ctx, iter.Val()).Err()
+		if err := r.client.Del(ctx, iter.Val()).Err(); err != nil {
+			return fmt.Errorf("%s: failed to delete token: %w", op, err)
+		}
+		return nil
 	}
+
 	if err := iter.Err(); err != nil {
-		return err
+		return fmt.Errorf("%s: failed to scan keys: %w", op, err)
 	}
+
 	return nil
 }
 
-func (r *RefreshTokenRepository) Replace(
-	ctx context.Context,
-	oldToken string,
-	newToken string,
-	userID int64,
-) error {
+func (r *RefreshTokenRepository) Replace(ctx context.Context, oldToken string, newToken string, userID int64) error {
+	const op = "RefreshTokenRepository.Replace"
+
 	if err := r.Delete(ctx, oldToken); err != nil {
-		return err
+		return fmt.Errorf("%s: failed to delete old token: %w", op, err)
 	}
-	return r.Store(ctx, userID, newToken)
+
+	if err := r.Store(ctx, userID, newToken); err != nil {
+		return fmt.Errorf("%s: failed to store new token: %w", op, err)
+	}
+
+	return nil
 }

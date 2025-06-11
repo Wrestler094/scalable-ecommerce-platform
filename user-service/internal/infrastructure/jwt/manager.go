@@ -34,6 +34,8 @@ func NewManager(accessSecret string, accessTTL time.Duration) *Manager {
 }
 
 func (m *Manager) GenerateAccessToken(userID int64, role string) (string, error) {
+	const op = "jwt.Manager.GenerateAccessToken"
+
 	now := time.Now()
 
 	claims := accessTokenClaims{
@@ -46,9 +48,21 @@ func (m *Manager) GenerateAccessToken(userID int64, role string) (string, error)
 	}
 
 	token := jwt.NewWithClaims(m.signingMethod, claims)
-	return token.SignedString([]byte(m.accessSecret))
+	signed, err := token.SignedString([]byte(m.accessSecret))
+	if err != nil {
+		return "", fmt.Errorf("%s: failed to sign access token: %w", op, err)
+	}
+
+	return signed, nil
 }
 
 func (m *Manager) GenerateRefreshToken() (string, error) {
-	return uuid.NewString(), nil
+	const op = "jwt.Manager.GenerateRefreshToken"
+
+	id, err := uuid.NewRandom()
+	if err != nil {
+		return "", fmt.Errorf("%s: failed to generate UUID: %w", op, err)
+	}
+
+	return id.String(), nil
 }

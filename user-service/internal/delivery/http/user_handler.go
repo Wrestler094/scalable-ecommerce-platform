@@ -1,27 +1,33 @@
 package http
 
 import (
+	"errors"
 	"net/http"
 
-	"user-service/internal/delivery/http/dto"
-	"user-service/internal/usecase"
-
+	"github.com/go-chi/chi/v5/middleware"
 	"pkg/httphelper"
+	"pkg/logger"
+	"user-service/internal/delivery/http/dto"
+	"user-service/internal/domain"
 )
 
 type UserHandler struct {
-	userUC    usecase.UserUseCase
+	userUC    domain.UserUseCase
 	validator httphelper.Validator
+	logger    logger.Logger
 }
 
-func NewUserHandler(userUC usecase.UserUseCase, validator httphelper.Validator) *UserHandler {
+func NewUserHandler(userUC domain.UserUseCase, validator httphelper.Validator, logger logger.Logger) *UserHandler {
 	return &UserHandler{
 		userUC:    userUC,
 		validator: validator,
+		logger:    logger,
 	}
 }
 
 func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
+	const op = "UserHandler.Register"
+
 	req, err := httphelper.DecodeJSON[dto.RegisterRequest](r, w)
 	if err != nil {
 		httphelper.RespondError(w, http.StatusBadRequest, "invalid request body")
@@ -35,6 +41,16 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 
 	userID, err := h.userUC.Register(r.Context(), req.Email, req.Password)
 	if err != nil {
+		if errors.Is(err, domain.ErrUserAlreadyExists) {
+			httphelper.RespondError(w, http.StatusConflict, "user already exists")
+			return
+		}
+
+		h.logger.WithOp(op).
+			WithRequestID(middleware.GetReqID(r.Context())).
+			WithError(err).
+			Error("failed to register user")
+
 		httphelper.RespondError(w, http.StatusInternalServerError, "something went wrong")
 		return
 	}
@@ -43,6 +59,8 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
+	const op = "UserHandler.Login"
+
 	req, err := httphelper.DecodeJSON[dto.LoginRequest](r, w)
 	if err != nil {
 		httphelper.RespondError(w, http.StatusBadRequest, "invalid request body")
@@ -56,6 +74,16 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	accessToken, refreshToken, err := h.userUC.Login(r.Context(), req.Email, req.Password)
 	if err != nil {
+		if errors.Is(err, domain.ErrInvalidCredentials) {
+			httphelper.RespondError(w, http.StatusUnauthorized, "invalid email or password")
+			return
+		}
+
+		h.logger.WithOp(op).
+			WithRequestID(middleware.GetReqID(r.Context())).
+			WithError(err).
+			Error("failed to login user")
+
 		httphelper.RespondError(w, http.StatusInternalServerError, "something went wrong")
 		return
 	}
@@ -73,6 +101,8 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) Refresh(w http.ResponseWriter, r *http.Request) {
+	const op = "UserHandler.Refresh"
+
 	cookie, err := r.Cookie("refresh_token")
 	if err != nil {
 		httphelper.RespondError(w, http.StatusUnauthorized, "no refresh token")
@@ -81,15 +111,21 @@ func (h *UserHandler) Refresh(w http.ResponseWriter, r *http.Request) {
 
 	accessToken, err := h.userUC.Refresh(r.Context(), cookie.Value)
 	if err != nil {
-		httphelper.RespondError(w, http.StatusInternalServerError, "something went wrong")
+		h.logger.WithOp(op).
+			WithRequestID(middleware.GetReqID(r.Context())).
+			WithError(err).
+			Warn("failed to refresh token")
+
+		httphelper.RespondError(w, http.StatusUnauthorized, "invalid or expired refresh token")
 		return
 	}
 
 	httphelper.RespondJSON(w, http.StatusOK, dto.RefreshResponse{AccessToken: accessToken})
-
 }
 
 func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
+	const op = "UserHandler.Logout"
+
 	cookie, err := r.Cookie("refresh_token")
 	if err != nil {
 		httphelper.RespondError(w, http.StatusBadRequest, "no refresh token")
@@ -97,6 +133,11 @@ func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.userUC.Logout(r.Context(), cookie.Value); err != nil {
+		h.logger.WithOp(op).
+			WithRequestID(middleware.GetReqID(r.Context())).
+			WithError(err).
+			Error("failed to logout user")
+
 		httphelper.RespondError(w, http.StatusInternalServerError, "something went wrong")
 		return
 	}

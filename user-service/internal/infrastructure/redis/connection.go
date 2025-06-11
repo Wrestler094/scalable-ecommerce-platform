@@ -13,6 +13,8 @@ type Redis struct {
 }
 
 func NewClient(addr, password string, db int) (*Redis, error) {
+	const op = "redis.NewClient"
+
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     addr,
 		Password: password,
@@ -23,12 +25,18 @@ func NewClient(addr, password string, db int) (*Redis, error) {
 	defer cancel()
 
 	if err := rdb.Ping(ctx).Err(); err != nil {
-		return nil, fmt.Errorf("failed to connect to redis: %w", err)
+		return nil, fmt.Errorf("%s: failed to connect to redis: %w", op, err)
 	}
 
 	return &Redis{Client: rdb}, nil
 }
 
 func (r *Redis) Close() error {
-	return r.Client.Close()
+	const op = "redis.Close"
+
+	if err := r.Client.Close(); err != nil {
+		return fmt.Errorf("%s: failed to close redis client: %w", op, err)
+	}
+
+	return nil
 }

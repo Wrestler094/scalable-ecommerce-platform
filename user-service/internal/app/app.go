@@ -3,13 +3,17 @@ package app
 import (
 	"fmt"
 	"log"
+	"net/url"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 	"time"
 
 	"pkg/cache"
+	"pkg/httpserver"
+	"pkg/logger"
+	"pkg/validator"
+
 	"user-service/internal/config"
 	"user-service/internal/delivery/http"
 	"user-service/internal/infrastructure/hasher"
@@ -19,18 +23,18 @@ import (
 	"user-service/internal/usecase"
 
 	"pkg/adapters"
-	"pkg/httpserver"
-	"pkg/logger"
-	"pkg/validator"
 )
 
-// Run creates objects via constructors.
+// Run creates objects via constructors and starts the application.
 func Run(cfg *config.Config) {
+	start := time.Now()
+
 	l, err := logger.NewLogger(cfg.Log.Level)
 	if err != nil {
 		log.Fatalf("Logger initialization failed: %s", err)
 	}
 
+	l = l.WithOp("app.Run")
 	l.Info("Logger initialized", "level", cfg.Log.Level)
 
 	// Connect Postgres
@@ -40,7 +44,8 @@ func Run(cfg *config.Config) {
 	}
 	defer pg.Close()
 
-	l.Info("DB initialized", "url", strings.Split(cfg.PG.URL, "@")[1])
+	u, _ := url.Parse(cfg.PG.URL)
+	l.Info("PostgreSQL connected", "host", u.Hostname(), "port", u.Port())
 
 	// Connect Redis
 	rdb, err := redisinfra.NewClient(cfg.Redis.Addr, cfg.Redis.Password, cfg.Redis.DB)
@@ -49,7 +54,7 @@ func Run(cfg *config.Config) {
 	}
 	defer rdb.Close()
 
-	l.Info("Redis initialized", "url", cfg.Redis.Addr)
+	l.Info("Redis connected", "addr", cfg.Redis.Addr)
 
 	// Helpers/Deps
 	tokenManager := jwt.NewManager(cfg.JWT.AccessSecret, time.Duration(cfg.JWT.TokenTTL)*time.Second)
@@ -58,16 +63,16 @@ func Run(cfg *config.Config) {
 	httpValidator := adapters.NewHttpValidatorAdapter(rawValidator)
 	redisCache := cache.NewRedisCache(rdb.Client)
 
-	// Repository
+	// Repositories
 	userRepo := postgres.NewUserRepository(pg.DB)
-	cashedUserRepo := postgres.NewCachedUserRepository(userRepo, redisCache, l)
+	cachedUserRepo := postgres.NewCachedUserRepository(userRepo, redisCache, l)
 	refreshRepo := redisinfra.NewRefreshTokenRepository(rdb.Client)
 
-	// Use-Case
-	userUseCase := usecase.NewUserUseCase(cashedUserRepo, refreshRepo, tokenManager, passwordHasher)
+	// Use-Cases
+	userUseCase := usecase.NewUserUseCase(cachedUserRepo, refreshRepo, tokenManager, passwordHasher)
 
 	// Handlers
-	userHandler := http.NewUserHandler(userUseCase, httpValidator)
+	userHandler := http.NewUserHandler(userUseCase, httpValidator, l)
 
 	// Router
 	router := http.NewRouter(http.Handlers{
@@ -80,28 +85,29 @@ func Run(cfg *config.Config) {
 		httpserver.Handler(router),
 	)
 
-	l.Info("HTTP Server running", "port", cfg.HTTP.Port)
+	l.Info("HTTP server is starting", "port", cfg.HTTP.Port)
 
-	// Start servers
-	err = httpServer.Start()
-	if err != nil {
-		l.Fatal("Failed to start server", "error", err)
+	// Start server
+	if err := httpServer.Start(); err != nil {
+		l.WithError(err).Fatal("HTTP server failed to start")
 	}
 
-	// Waiting signal
+	l.Info("Startup complete", logger.LogKeyDurationMS, time.Since(start).String())
+
+	// Graceful shutdown handling
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
 
 	select {
-	case s := <-interrupt:
-		l.Info("Received signal", "signal", s)
-	case err = <-httpServer.Notify():
-		l.Error("httpServer.Notify", "error", err)
+	case sig := <-interrupt:
+		l.Info("Received shutdown signal", "signal", sig)
+	case err := <-httpServer.Notify():
+		l.WithError(err).Error("HTTP server reported error")
 	}
 
-	// Shutdown
-	err = httpServer.Shutdown()
-	if err != nil {
-		l.Error("httpServer.Shutdown", "error", err)
+	if err := httpServer.Shutdown(); err != nil {
+		l.WithError(err).Error("HTTP server shutdown failed")
+	} else {
+		l.Info("HTTP server gracefully stopped")
 	}
 }
