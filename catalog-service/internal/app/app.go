@@ -12,6 +12,7 @@ import (
 	"catalog-service/internal/delivery/http"
 	"catalog-service/internal/infrastructure/postgres"
 	"catalog-service/internal/usecase"
+	"pkg/healthcheck"
 
 	"pkg/adapters"
 	"pkg/authenticator"
@@ -42,6 +43,7 @@ func Run(cfg *config.Config) {
 	rawValidator := validator.NewPlaygroundValidator()
 	httpValidator := adapters.NewHttpValidatorAdapter(rawValidator)
 	JWTAuthenticator := authenticator.NewJWTAuthenticator(cfg.JWT.AccessSecret)
+	healthManager := healthcheck.NewManager()
 
 	// Repository
 	categoryRepository := postgres.NewCategoryRepository(pg.DB)
@@ -54,12 +56,14 @@ func Run(cfg *config.Config) {
 	// Handlers
 	categoryHandler := http.NewCategoryHandler(categoryUseCase, productUseCase, httpValidator)
 	productHandler := http.NewProductHandler(productUseCase, httpValidator)
+	monitoringHandler := http.NewMonitoringHandler(healthManager)
 
 	handlers := http.Handlers{
-		ProductHandler:  productHandler,
-		CategoryHandler: categoryHandler,
+		ProductHandler:    productHandler,
+		CategoryHandler:   categoryHandler,
+		MonitoringHandler: monitoringHandler,
 	}
-	
+
 	// Router
 	router := http.NewRouter(handlers, JWTAuthenticator)
 
@@ -77,6 +81,8 @@ func Run(cfg *config.Config) {
 		l.Fatal("Failed to start server", "error", err)
 	}
 
+	healthManager.SetReady(true)
+
 	// Waiting signal
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
@@ -87,6 +93,9 @@ func Run(cfg *config.Config) {
 	case err = <-httpServer.Notify():
 		l.Error("httpServer.Notify", "error", err)
 	}
+
+	healthManager.SetReady(false)
+	healthManager.SetAlive(false)
 
 	// Shutdown
 	err = httpServer.Shutdown()
