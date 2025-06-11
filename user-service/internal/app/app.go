@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"pkg/cache"
+	"pkg/healthcheck"
 	"pkg/httpserver"
 	"pkg/logger"
 	"pkg/validator"
@@ -62,6 +63,7 @@ func Run(cfg *config.Config) {
 	rawValidator := validator.NewPlaygroundValidator()
 	httpValidator := adapters.NewHttpValidatorAdapter(rawValidator)
 	redisCache := cache.NewRedisCache(rdb.Client)
+	healthManager := healthcheck.NewManager()
 
 	// Repositories
 	userRepo := postgres.NewUserRepository(pg.DB)
@@ -73,10 +75,12 @@ func Run(cfg *config.Config) {
 
 	// Handlers
 	userHandler := http.NewUserHandler(userUseCase, httpValidator, l)
+	monitoringHandler := http.NewMonitoringHandler(healthManager)
 
 	// Router
 	router := http.NewRouter(http.Handlers{
-		UserHandler: userHandler,
+		UserHandler:       userHandler,
+		MonitoringHandler: monitoringHandler,
 	})
 
 	// HTTP Server
@@ -92,6 +96,8 @@ func Run(cfg *config.Config) {
 		l.WithError(err).Fatal("HTTP server failed to start")
 	}
 
+	healthManager.SetReady(true)
+
 	l.Info("Startup complete", logger.LogKeyDurationMS, time.Since(start).String())
 
 	// Graceful shutdown handling
@@ -104,6 +110,9 @@ func Run(cfg *config.Config) {
 	case err := <-httpServer.Notify():
 		l.WithError(err).Error("HTTP server reported error")
 	}
+
+	healthManager.SetReady(false)
+	healthManager.SetAlive(false)
 
 	if err := httpServer.Shutdown(); err != nil {
 		l.WithError(err).Error("HTTP server shutdown failed")

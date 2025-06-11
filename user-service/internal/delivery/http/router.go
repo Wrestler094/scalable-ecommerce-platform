@@ -8,7 +8,8 @@ import (
 )
 
 type Handlers struct {
-	UserHandler *UserHandler
+	UserHandler       *UserHandler
+	MonitoringHandler *MonitoringHandler
 }
 
 func NewRouter(h Handlers) http.Handler {
@@ -28,6 +29,11 @@ func NewRouter(h Handlers) http.Handler {
 			r.Post("/logout", h.UserHandler.Logout)
 		})
 	})
+
+	// Monitoring endpoints
+	r.Handle("/metrics", http.HandlerFunc(h.MonitoringHandler.Metrics))
+	r.Get("/healthz", h.MonitoringHandler.Liveness)
+	r.Get("/readyz", h.MonitoringHandler.Readiness)
 
 	return r
 }
