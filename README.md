@@ -18,14 +18,13 @@ scalable-ecommerce-platform/
 │   ├── authenticator/               # JWT, контекст, middleware
 │   ├── httphelper/                  # Обработка ошибок, JSON-ответов
 │   └── ...
-├── deploy/                          # Docker Compose и env-файлы
-│   ├── docker-compose.user.yml
-│   ├── docker-compose.catalog.yml
-│   ├── docker-compose.cart.yml
-│   └── envs/
-│       ├── user.env
-│       ├── catalog.env
-│       └── cart.env
+├── deploy/                          # Docker Compose и .env файлы по сервисам
+│   ├── user/
+│   │   ├── docker-compose.yml
+│   │   ├── user.env.example
+│   │   └── user.env
+│   ├── catalog/
+│   └── cart/
 ├── user-service/                    # Сервис пользователей (PostgreSQL, Redis)
 ├── catalog-service/                 # Сервис каталога (PostgreSQL)
 └── cart-service/                    # Сервис корзины (Redis)
@@ -50,7 +49,19 @@ user-service/
 └── go.work               # Рабочее пространство Go
 ```
 
-## ⚙️ Makefile команды
+## 🚀 Запуск проекта
+Для удобства запуска и управления сервисами используется Makefile. Он позволяет поднимать отдельные сервисы или все сразу.
+
+### 🔧 Подготовка
+Сначала создай .env файлы на основе шаблонов:
+
+```bash
+cp deploy/user/user.env.example deploy/user/user.env
+cp deploy/catalog/catalog.env.example deploy/catalog/catalog.env
+cp deploy/cart/cart.env.example deploy/cart/cart.env
+```
+
+### ⚙️ Makefile команды
 
 Упрощают сборку и запуск сервисов.
 
@@ -79,6 +90,8 @@ make all-up
 # Остановить все сервисы
 make all-down
 ```
+💡 Все команды определены в корневом Makefile.
+
 
 ## ⚙️ Зависимости
 - Go 1.23.0
