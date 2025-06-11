@@ -13,6 +13,7 @@ import (
 	"cart-service/internal/usecase"
 	"pkg/adapters"
 	"pkg/authenticator"
+	"pkg/healthcheck"
 	"pkg/validator"
 
 	"pkg/httpserver"
@@ -41,6 +42,7 @@ func Run(cfg *config.Config) {
 	rawValidator := validator.NewPlaygroundValidator()
 	httpValidator := adapters.NewHttpValidatorAdapter(rawValidator)
 	JWTAuthenticator := authenticator.NewJWTAuthenticator(cfg.JWT.AccessSecret)
+	healthManager := healthcheck.NewManager()
 
 	// Repository
 	cartRepository := redisinfra.NewRedisCartRepo(rdb.Client)
@@ -50,9 +52,11 @@ func Run(cfg *config.Config) {
 
 	// Handlers
 	cartHandler := http.NewCartHandler(cartUseCase, httpValidator)
+	monitoringHandler := http.NewMonitoringHandler(healthManager)
 
 	handlers := http.Handlers{
-		CartHandler: cartHandler,
+		CartHandler:       cartHandler,
+		MonitoringHandler: monitoringHandler,
 	}
 
 	// Router
@@ -72,6 +76,8 @@ func Run(cfg *config.Config) {
 		l.Fatal("Failed to start server", "error", err)
 	}
 
+	healthManager.SetReady(true)
+
 	// Waiting signal
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
@@ -82,6 +88,9 @@ func Run(cfg *config.Config) {
 	case err = <-httpServer.Notify():
 		l.Error("httpServer.Notify", "error", err)
 	}
+
+	healthManager.SetReady(false)
+	healthManager.SetAlive(false)
 
 	// Shutdown
 	err = httpServer.Shutdown()
