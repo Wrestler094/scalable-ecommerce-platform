@@ -18,10 +18,8 @@ services:
     image: redis:7
     container_name: cart-redis
     restart: unless-stopped
-    env_file:
-      - ./cart.env
     ports:
-      - "${REDIS_EXTERNAL_PORT}:6379"
+      - "${REDIS_EXTERNAL_PORT}:${REDIS_PORT}"
     volumes:
       - cart_redis_data:/data
     networks:

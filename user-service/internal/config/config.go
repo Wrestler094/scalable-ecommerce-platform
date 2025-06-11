@@ -37,7 +37,11 @@ type (
 	}
 
 	PG struct {
-		URL string `env:"POSTGRES_URL,required"`
+		Host     string `env:"DB_HOST,required"`
+		Port     string `env:"DB_PORT,required"`
+		User     string `env:"DB_USER,required"`
+		Password string `env:"DB_PASSWORD,required"`
+		DBName   string `env:"DB_NAME,required"`
 	}
 
 	Redis struct {
@@ -65,4 +69,11 @@ func NewConfig() (*Config, error) {
 	}
 
 	return cfg, nil
+}
+
+func (pg PG) DSN() string {
+	return fmt.Sprintf(
+		"postgres://%s:%s@%s:%s/%s?sslmode=disable",
+		pg.User, pg.Password, pg.Host, pg.Port, pg.DBName,
+	)
 }

@@ -3,7 +3,6 @@ package app
 import (
 	"fmt"
 	"log"
-	"net/url"
 	"os"
 	"os/signal"
 	"syscall"
@@ -39,14 +38,13 @@ func Run(cfg *config.Config) {
 	l.Info("Logger initialized", "level", cfg.Log.Level)
 
 	// Connect Postgres
-	pg, err := postgres.NewConnect(cfg.PG.URL)
+	pg, err := postgres.NewConnect(cfg.PG.DSN())
 	if err != nil {
 		l.Fatal("DB initialization failed", "error", err)
 	}
 	defer pg.Close()
 
-	u, _ := url.Parse(cfg.PG.URL)
-	l.Info("PostgreSQL connected", "host", u.Hostname(), "port", u.Port())
+	l.Info("PostgreSQL connected", "host", cfg.PG.Host, "port", cfg.PG.Port, "db", cfg.PG.DBName)
 
 	// Connect Redis
 	rdb, err := redisinfra.NewClient(cfg.Redis.Addr, cfg.Redis.Password, cfg.Redis.DB)

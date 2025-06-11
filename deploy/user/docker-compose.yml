@@ -19,10 +19,12 @@ services:
     image: postgres:15
     container_name: user-db
     restart: unless-stopped
-    env_file:
-      - ./user.env
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "${DB_EXTERNAL_PORT}:5432"
+      - "${DB_EXTERNAL_PORT}:${DB_PORT}"
     volumes:
       - user_db_data:/var/lib/postgresql/data
     networks:
@@ -32,10 +34,8 @@ services:
     image: redis:7
     container_name: user-redis
     restart: unless-stopped
-    env_file:
-      - ./user.env
     ports:
-      - "${REDIS_EXTERNAL_PORT}:6379"
+      - "${REDIS_EXTERNAL_PORT}:${REDIS_PORT}"
     volumes:
       - user_redis_data:/data
     networks:

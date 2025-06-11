@@ -25,5 +25,5 @@
 docker-compose.override.yml
 
 # === Env files ===
-*.env
 **/*.env
+!**/*.env.example
