@@ -1,0 +1,21 @@
+apiVersion: 1
+
+providers:
+  - name: runtime
+    orgId: 1
+    folder: "Go Runtime & Process"
+    type: file
+    disableDeletion: false
+    allowUiUpdates: true
+    updateIntervalSeconds: 10
+    options:
+      path: /etc/grafana/provisioning/dashboards/runtime
+
+  - name: business
+    folder: 'Business Metrics'
+    type: file
+    disableDeletion: false
+    allowUiUpdates: true
+    updateIntervalSeconds: 10
+    options:
+      path: /etc/grafana/provisioning/dashboards/business

@@ -1,10 +1,24 @@
-.PHONY: user-up user-down catalog-up catalog-down cart-up cart-down all-up all-down
+.PHONY: user-up user-down catalog-up catalog-down cart-up cart-down \
+        monitoring-up monitoring-down network-create \
+        all-up all-down infra-up infra-down
 
 # === DEPLOY PATHS ===
 DEPLOY_DIR := ./deploy
 USER_DEPLOY := $(DEPLOY_DIR)/user
 CATALOG_DEPLOY := $(DEPLOY_DIR)/catalog
 CART_DEPLOY := $(DEPLOY_DIR)/cart
+MONITORING_DEPLOY := $(DEPLOY_DIR)/monitoring
+
+# === NETWORK ===
+NETWORK_NAME := backend
+
+network-create:
+	@if ! docker network ls --format '{{.Name}}' | grep -q "^$(NETWORK_NAME)$$"; then \
+		echo "Creating network $(NETWORK_NAME)..."; \
+		docker network create $(NETWORK_NAME); \
+	else \
+		echo "Network $(NETWORK_NAME) already exists."; \
+	fi
 
 # === USER SERVICE ===
 USER_COMPOSE := $(USER_DEPLOY)/docker-compose.yml
@@ -36,7 +50,21 @@ cart-up:
 cart-down:
 	docker compose -f $(CART_COMPOSE) --env-file $(CART_ENV) down
 
-# === ALL SERVICES ===
-all-up: user-up catalog-up cart-up
+# === MONITORING ===
+MONITORING_COMPOSE := $(MONITORING_DEPLOY)/docker-compose.yml
 
-all-down: user-down catalog-down cart-down
+monitoring-up: network-create
+	docker compose -f $(MONITORING_COMPOSE) up -d --build
+
+monitoring-down:
+	docker compose -f $(MONITORING_COMPOSE) down
+
+# === INFRASTRUCTURE ===
+infra-up: monitoring-up
+
+infra-down: monitoring-down
+
+# === ALL SERVICES ===
+all-up: infra-up user-up catalog-up cart-up
+
+all-down: cart-down catalog-down user-down infra-down

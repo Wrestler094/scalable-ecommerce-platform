@@ -1,13 +1,14 @@
 # 🧱 Scalable E-Commerce Platform
 
-Микросервисная e-commerce платформа на Go, Docker и Redis/PostgreSQL. Разделена на отдельные сервисы с возможностью масштабирования и независимого деплоя.
+Микросервисная e-commerce платформа на Go, Docker и Redis/PostgreSQL. Разделена на изолированные сервисы с возможностью масштабирования, независимого деплоя и мониторинга. Поддерживает централизованную авторизацию, единый подход к валидации, логированию и метрикам.
 
 ## 📦 Сервисы
 
-- `user-service` — регистрация, авторизация
-- `catalog-service` — продукты, категории
-- `cart-service` — корзина пользователя
-- `pkg/` — общие модули: `authenticator`, `roles`, `httphelper`, `validator` и др.
+- `user-service` — регистрация, авторизация (PostgreSQL, Redis)
+- `catalog-service` — продукты, категории (PostgreSQL)
+- `cart-service` — корзина пользователя (Redis)
+- `pkg/` — общие модули: `authenticator`, `roles`, `httphelper`, `validator` и др. 
+- `deploy/monitoring/` — мониторинг на базе Prometheus + Grafana, c auto-provisioning дашбордов
 
 ## 📁 Структура проекта
 
@@ -24,7 +25,15 @@ scalable-ecommerce-platform/
 │   │   ├── user.env.example
 │   │   └── user.env
 │   ├── catalog/
-│   └── cart/
+│   ├── cart/
+│   └── monitoring/                  # Monitoring stack: Prometheus + Grafana
+│       ├── docker-compose.yml       # Сборка мониторинга
+│       ├── prometheus/
+│       │   └── prometheus.yml       # Конфигурация Prometheus (scrape configs)
+│       └── grafana/
+│           ├── dashboards/          # JSON-файлы дашбордов (provisioning)
+│           ├── dashboards.yml       # Описание провайдеров дашбордов
+│           └── datasources/         # Prometheus datasource provisioning
 ├── user-service/                    # Сервис пользователей (PostgreSQL, Redis)
 ├── catalog-service/                 # Сервис каталога (PostgreSQL)
 └── cart-service/                    # Сервис корзины (Redis)
@@ -66,38 +75,29 @@ cp deploy/cart/cart.env.example deploy/cart/cart.env
 Упрощают сборку и запуск сервисов.
 
 ```bash
-# Запустить только user-service
-make user-up
+# Отдельные сервисы
+make user-up          # или catalog-up, cart-up
+make user-down        # или catalog-down, cart-down
 
-# Остановить user-service
-make user-down
-
-# Запустить только catalog-service
-make catalog-up
-
-# Остановить catalog-service
-make catalog-down
-
-# Запустить только cart-service
-make cart-up
-
-# Остановить cart-service
-make cart-down
-
-# Запустить все сервисы
+# Все сервисы
 make all-up
-
-# Остановить все сервисы
 make all-down
+
+# Мониторинг
+make monitoring-up
+make monitoring-down
+make monitoring-reset  # с очисткой volume
+
+# Docker-сеть (создаётся один раз)
+make network-create
 ```
 💡 Все команды определены в корневом Makefile.
 
-
 ## ⚙️ Зависимости
 - Go 1.23.0
-- Docker, Docker Compose
-- Redis, PostgreSQL
-- go-chi, bcrypt, go-redis, jwt-go
+- Docker, Docker Compose 
+- Prometheus + Grafana (мониторинг Go-сервисов)
+- go-chi, bcrypt, go-redis, jwt-go, validator.v10
 
 ## 🔒 Авторизация
 
@@ -105,7 +105,14 @@ make all-down
 
 `RequireRoles(...)`: проверка роли (user, admin)
 
+JWT-токены валидируются через модуль authenticator, реализующий интерфейс Authenticator.
+
 ## 📝 Примечания
 
-- Каждый сервис имеет свой go.work и Dockerfile. 
-- Все сервисы используют общий pkg/, подключённый через go.work.
+- Каждый сервис имеет свой go.work и Dockerfile и docker-compose.yml. 
+- Все сервисы используют общий pkg/, подключённый через go.work. 
+- Для мониторинга используется deploy/monitoring/:
+- Prometheus собирает метрики с /metrics каждого сервиса 
+- Grafana автоматически импортирует дашборды через provisioning 
+- Поддерживаются базовые runtime-метрики (go_*, process_*, promhttp_*)
+- Makefile содержит цели для быстрого запуска мониторинга (make monitoring-up, monitoring-reset)
