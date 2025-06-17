@@ -1,12 +1,13 @@
 # 🧱 Scalable E-Commerce Platform
 
-Микросервисная e-commerce платформа на Go, Docker и Redis/PostgreSQL. Разделена на изолированные сервисы с возможностью масштабирования, независимого деплоя и мониторинга. Поддерживает централизованную авторизацию, единый подход к валидации, логированию и метрикам.
+Микросервисная e-commerce платформа на Go, Docker, Redis и PostgreSQL. Разделена на изолированные сервисы с возможностью масштабирования, независимого деплоя и мониторинга. Использует Kafka для обмена событиями между сервисами. Поддерживает централизованную авторизацию, единый подход к валидации, логированию и метрикам.
 
 ## 📦 Сервисы
 
 - `user-service` — регистрация, авторизация (PostgreSQL, Redis)
 - `catalog-service` — продукты, категории (PostgreSQL)
 - `cart-service` — корзина пользователя (Redis)
+- `payment-service` — заглушка для обработки платежей (PostgreSQL, Redis)
 - `pkg/` — общие модули: `authenticator`, `roles`, `httphelper`, `validator` и др. 
 - `deploy/monitoring/` — мониторинг на базе Prometheus + Grafana, c auto-provisioning дашбордов
 
@@ -18,6 +19,7 @@ scalable-ecommerce-platform/
 ├── pkg/                             # Общие переиспользуемые модули
 │   ├── authenticator/               # JWT, контекст, middleware
 │   ├── httphelper/                  # Обработка ошибок, JSON-ответов
+│   ├── events/                      # Общие топики события Kafka
 │   └── ...
 ├── deploy/                          # Docker Compose и .env файлы по сервисам
 │   ├── user/
@@ -26,6 +28,8 @@ scalable-ecommerce-platform/
 │   │   └── user.env
 │   ├── catalog/
 │   ├── cart/
+│   ├── payment/
+│   ├── kafka/                       # Kafka stack: Kafka + ZooKeeper + Kafka UI
 │   └── monitoring/                  # Monitoring stack: Prometheus + Grafana
 │       ├── docker-compose.yml       # Сборка мониторинга
 │       ├── prometheus/
@@ -36,6 +40,7 @@ scalable-ecommerce-platform/
 │           └── datasources/         # Prometheus datasource provisioning
 ├── user-service/                    # Сервис пользователей (PostgreSQL, Redis)
 ├── catalog-service/                 # Сервис каталога (PostgreSQL)
+├── payment-service/                 # Сервис обработки платежей (PostgreSQL, Redis, Kafka-паблишер)
 └── cart-service/                    # Сервис корзины (Redis)
 ```
 ## 📁 Структура сервиса
@@ -68,6 +73,8 @@ user-service/
 cp deploy/user/user.env.example deploy/user/user.env
 cp deploy/catalog/catalog.env.example deploy/catalog/catalog.env
 cp deploy/cart/cart.env.example deploy/cart/cart.env
+cp deploy/payment/payment.env.example deploy/payment/payment.env
+cp deploy/kafka/kafka.env.example deploy/kafka/kafka.env
 ```
 
 ### ⚙️ Makefile команды
@@ -76,8 +83,8 @@ cp deploy/cart/cart.env.example deploy/cart/cart.env
 
 ```bash
 # Отдельные сервисы
-make user-up          # или catalog-up, cart-up
-make user-down        # или catalog-down, cart-down
+make user-up          # или catalog-up, cart-up, payment-up
+make user-down        # или catalog-down, cart-down, payment-down
 
 # Все сервисы
 make all-up
@@ -86,7 +93,14 @@ make all-down
 # Мониторинг
 make monitoring-up
 make monitoring-down
-make monitoring-reset  # с очисткой volume
+
+# Kafka стек (Kafka + ZooKeeper + Kafka UI)
+make kafka-up
+make kafka-down
+
+# Вся инфраструктура сразу (Kafka + Monitoring)
+make infra-up
+make infra-down
 
 # Docker-сеть (создаётся один раз)
 make network-create
@@ -96,8 +110,9 @@ make network-create
 ## ⚙️ Зависимости
 - Go 1.23.0
 - Docker, Docker Compose 
+- Kafka (взаимодействие между сервисами)
 - Prometheus + Grafana (мониторинг Go-сервисов)
-- go-chi, bcrypt, go-redis, jwt-go, validator.v10
+- go-chi, sqlx, bcrypt, go-redis, jwt-go, validator.v10
 
 ## 🔒 Авторизация
 
@@ -115,4 +130,3 @@ JWT-токены валидируются через модуль authenticator,
 - Prometheus собирает метрики с /metrics каждого сервиса 
 - Grafana автоматически импортирует дашборды через provisioning 
 - Поддерживаются базовые runtime-метрики (go_*, process_*, promhttp_*)
-- Makefile содержит цели для быстрого запуска мониторинга (make monitoring-up, monitoring-reset)

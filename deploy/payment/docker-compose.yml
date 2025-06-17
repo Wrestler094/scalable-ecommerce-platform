@@ -1,0 +1,50 @@
+services:
+  payment-service:
+    build:
+      context: ../../
+      dockerfile: payment-service/Dockerfile
+    container_name: payment-service
+    restart: unless-stopped
+    depends_on:
+      - payment-db
+      - payment-redis
+    env_file:
+      - ./payment.env
+    ports:
+      - "${HTTP_EXTERNAL_PORT}:${HTTP_PORT}"
+    networks:
+      - backend
+
+  payment-db:
+    image: postgres:15
+    container_name: payment-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "${DB_EXTERNAL_PORT}:${DB_PORT}"
+    volumes:
+      - payment_db_data:/var/lib/postgresql/data
+    networks:
+      - backend
+
+  payment-redis:
+    image: redis:7
+    container_name: payment-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_EXTERNAL_PORT}:${REDIS_PORT}"
+    volumes:
+      - payment_redis_data:/data
+    networks:
+      - backend
+
+volumes:
+  payment_db_data:
+  payment_redis_data:
+
+networks:
+  backend:
+    external: true
