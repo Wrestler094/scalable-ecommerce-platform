@@ -6,7 +6,9 @@ services:
       ZOOKEEPER_CLIENT_PORT: ${ZOOKEEPER_CLIENT_PORT}
       ZOOKEEPER_TICK_TIME: 2000
     volumes:
-      - kafka_zookeeper_data:/var/lib/zookeeper/data
+      - zookeeper_data:/var/lib/zookeeper/data
+      - zookeeper_log:/var/lib/zookeeper/log
+      - zookeeper_secrets:/etc/zookeeper/secrets
     networks:
       - backend
 
@@ -25,6 +27,7 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     volumes:
       - kafka_data:/var/lib/kafka/data
+      - kafka_secrets:/etc/kafka/secrets
     networks:
       - backend
 
@@ -42,8 +45,11 @@ services:
       - backend
 
 volumes:
+  zookeeper_data:
+  zookeeper_log:
+  zookeeper_secrets:
   kafka_data:
-  kafka_zookeeper_data:
+  kafka_secrets:
 
 networks:
   backend:
