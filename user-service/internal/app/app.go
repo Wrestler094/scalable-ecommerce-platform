@@ -8,6 +8,7 @@ import (
 	"syscall"
 	"time"
 
+	"pkg/adapters"
 	"pkg/cache"
 	"pkg/healthcheck"
 	"pkg/httpserver"
@@ -21,39 +22,37 @@ import (
 	"user-service/internal/infrastructure/postgres"
 	redisinfra "user-service/internal/infrastructure/redis"
 	"user-service/internal/usecase"
-
-	"pkg/adapters"
 )
 
 // Run creates objects via constructors and starts the application.
 func Run(cfg *config.Config) {
 	start := time.Now()
 
-	l, err := logger.NewLogger(cfg.Log.Level)
+	baseLogger, err := logger.NewLogger(cfg.Log.Level)
 	if err != nil {
 		log.Fatalf("Logger initialization failed: %s", err)
 	}
 
-	l = l.WithOp("app.Run")
-	l.Info("Logger initialized", "level", cfg.Log.Level)
+	runLogger := baseLogger.WithOp("app.Run")
+	runLogger.Info("Logger initialized", "level", cfg.Log.Level)
 
 	// Connect Postgres
 	pg, err := postgres.NewConnect(cfg.PG.DSN())
 	if err != nil {
-		l.Fatal("DB initialization failed", "error", err)
+		runLogger.Fatal("DB initialization failed", "error", err)
 	}
 	defer pg.Close()
 
-	l.Info("PostgreSQL connected", "host", cfg.PG.Host, "port", cfg.PG.Port, "db", cfg.PG.DBName)
+	runLogger.Info("PostgreSQL connected", "host", cfg.PG.Host, "port", cfg.PG.Port, "db", cfg.PG.DBName)
 
 	// Connect Redis
 	rdb, err := redisinfra.NewClient(cfg.Redis.Addr, cfg.Redis.Password, cfg.Redis.DB)
 	if err != nil {
-		l.Fatal("Redis initialization failed", "error", err)
+		runLogger.Fatal("Redis initialization failed", "error", err)
 	}
 	defer rdb.Close()
 
-	l.Info("Redis connected", "addr", cfg.Redis.Addr)
+	runLogger.Info("Redis connected", "addr", cfg.Redis.Addr)
 
 	// Helpers/Deps
 	tokenManager := jwt.NewManager(cfg.JWT.AccessSecret, time.Duration(cfg.JWT.TokenTTL)*time.Second)
@@ -65,14 +64,14 @@ func Run(cfg *config.Config) {
 
 	// Repositories
 	userRepo := postgres.NewUserRepository(pg.DB)
-	cachedUserRepo := postgres.NewCachedUserRepository(userRepo, redisCache, l)
+	cachedUserRepo := postgres.NewCachedUserRepository(userRepo, redisCache, baseLogger)
 	refreshRepo := redisinfra.NewRefreshTokenRepository(rdb.Client)
 
 	// Use-Cases
 	userUseCase := usecase.NewUserUseCase(cachedUserRepo, refreshRepo, tokenManager, passwordHasher)
 
 	// Handlers
-	userHandler := http.NewUserHandler(userUseCase, httpValidator, l)
+	userHandler := http.NewUserHandler(userUseCase, httpValidator, baseLogger)
 	monitoringHandler := http.NewMonitoringHandler(healthManager)
 
 	// Router
@@ -87,16 +86,16 @@ func Run(cfg *config.Config) {
 		httpserver.Handler(router),
 	)
 
-	l.Info("HTTP server is starting", "port", cfg.HTTP.Port)
+	runLogger.Info("HTTP server is starting", "port", cfg.HTTP.Port)
 
 	// Start server
 	if err := httpServer.Start(); err != nil {
-		l.WithError(err).Fatal("HTTP server failed to start")
+		runLogger.WithError(err).Fatal("HTTP server failed to start")
 	}
 
 	healthManager.SetReady(true)
 
-	l.Info("Startup complete", logger.LogKeyDurationMS, time.Since(start).String())
+	runLogger.Info("Startup complete", logger.LogKeyDurationMS, time.Since(start).String())
 
 	// Graceful shutdown handling
 	interrupt := make(chan os.Signal, 1)
@@ -104,17 +103,17 @@ func Run(cfg *config.Config) {
 
 	select {
 	case sig := <-interrupt:
-		l.Info("Received shutdown signal", "signal", sig)
+		runLogger.Info("Received shutdown signal", "signal", sig)
 	case err := <-httpServer.Notify():
-		l.WithError(err).Error("HTTP server reported error")
+		runLogger.WithError(err).Error("HTTP server reported error")
 	}
 
 	healthManager.SetReady(false)
 	healthManager.SetAlive(false)
 
 	if err := httpServer.Shutdown(); err != nil {
-		l.WithError(err).Error("HTTP server shutdown failed")
+		runLogger.WithError(err).Error("HTTP server shutdown failed")
 	} else {
-		l.Info("HTTP server gracefully stopped")
+		runLogger.Info("HTTP server gracefully stopped")
 	}
 }
