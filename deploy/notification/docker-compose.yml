@@ -1,0 +1,17 @@
+services:
+  notification-service:
+    build:
+      context: ../../
+      dockerfile: notification-service/Dockerfile
+    container_name: notification-service
+    restart: unless-stopped
+    env_file:
+      - ./notification.env
+    ports:
+      - "${HTTP_EXTERNAL_PORT}:${HTTP_PORT}"
+    networks:
+      - backend
+
+networks:
+  backend:
+    external: true

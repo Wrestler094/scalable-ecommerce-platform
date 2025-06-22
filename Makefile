@@ -9,6 +9,7 @@ USER_DEPLOY := $(DEPLOY_DIR)/user
 CATALOG_DEPLOY := $(DEPLOY_DIR)/catalog
 CART_DEPLOY := $(DEPLOY_DIR)/cart
 PAYMENT_DEPLOY := $(DEPLOY_DIR)/payment
+NOTIFICATION_DEPLOY := $(DEPLOY_DIR)/notification
 KAFKA_DEPLOY := $(DEPLOY_DIR)/kafka
 MONITORING_DEPLOY := $(DEPLOY_DIR)/monitoring
 
@@ -62,6 +63,16 @@ payment-up: network-create kafka-up
 
 payment-down:
 	docker compose -f $(PAYMENT_COMPOSE) --env-file $(PAYMENT_ENV) down
+
+# === NOTIFICATION SERVICE ===
+NOTIFICATION_COMPOSE := $(NOTIFICATION_DEPLOY)/docker-compose.yml
+NOTIFICATION_ENV := $(NOTIFICATION_DEPLOY)/notification.env
+
+notification-up: network-create kafka-up
+	docker compose -f $(NOTIFICATION_COMPOSE) --env-file $(NOTIFICATION_ENV) up -d --build
+
+notification-down:
+	docker compose -f $(NOTIFICATION_COMPOSE) --env-file $(NOTIFICATION_ENV) down
 
 # === KAFKA STACK ===
 KAFKA_COMPOSE := $(KAFKA_DEPLOY)/docker-compose.yml

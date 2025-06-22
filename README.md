@@ -7,7 +7,8 @@
 - `user-service` — регистрация, авторизация (PostgreSQL, Redis)
 - `catalog-service` — продукты, категории (PostgreSQL)
 - `cart-service` — корзина пользователя (Redis)
-- `payment-service` — заглушка для обработки платежей (PostgreSQL, Redis)
+- `payment-service` — заглушка для обработки платежей (PostgreSQL, Redis, Kafka)
+- `notification-service` — отправка уведомлений по email и/или SMS (Kafka)
 - `pkg/` — общие модули: `authenticator`, `roles`, `httphelper`, `validator` и др. 
 - `deploy/monitoring/` — мониторинг на базе Prometheus + Grafana, c auto-provisioning дашбордов
 
@@ -40,7 +41,8 @@ scalable-ecommerce-platform/
 │           └── datasources/         # Prometheus datasource provisioning
 ├── user-service/                    # Сервис пользователей (PostgreSQL, Redis)
 ├── catalog-service/                 # Сервис каталога (PostgreSQL)
-├── payment-service/                 # Сервис обработки платежей (PostgreSQL, Redis, Kafka-паблишер)
+├── payment-service/                 # Сервис обработки платежей (PostgreSQL, Redis, Kafka-producer)
+├── notification-service/            # Сервис уведомлений (Kafka-consumer)
 └── cart-service/                    # Сервис корзины (Redis)
 ```
 ## 📁 Структура сервиса
@@ -74,6 +76,7 @@ cp deploy/user/user.env.example deploy/user/user.env
 cp deploy/catalog/catalog.env.example deploy/catalog/catalog.env
 cp deploy/cart/cart.env.example deploy/cart/cart.env
 cp deploy/payment/payment.env.example deploy/payment/payment.env
+cp deploy/notification/notification.env.example deploy/notification/notification.env
 cp deploy/kafka/kafka.env.example deploy/kafka/kafka.env
 ```
 
@@ -83,8 +86,8 @@ cp deploy/kafka/kafka.env.example deploy/kafka/kafka.env
 
 ```bash
 # Отдельные сервисы
-make user-up          # или catalog-up, cart-up, payment-up
-make user-down        # или catalog-down, cart-down, payment-down
+make user-up          # или catalog-up, cart-up, payment-up, notification-up
+make user-down        # или catalog-down, cart-down, payment-down, notification-down
 
 # Все сервисы
 make all-up
@@ -127,6 +130,8 @@ JWT-токены валидируются через модуль authenticator,
 - Каждый сервис имеет свой go.work и Dockerfile и docker-compose.yml. 
 - Все сервисы используют общий pkg/, подключённый через go.work. 
 - Для мониторинга используется deploy/monitoring/:
-- Prometheus собирает метрики с /metrics каждого сервиса 
-- Grafana автоматически импортирует дашборды через provisioning 
-- Поддерживаются базовые runtime-метрики (go_*, process_*, promhttp_*)
+  - Prometheus собирает метрики с /metrics каждого сервиса 
+  - Grafana автоматически импортирует дашборды через provisioning 
+  - Поддерживаются базовые runtime-метрики (go_*, process_*, promhttp_*)
+- Топики Kafka создаются вручную. Они не создаются автоматически при запуске consumer'ов, чтобы избежать неявных ошибок и обеспечить контроль конфигурации.
+- Kafka UI (kafka-ui от provectuslabs) разворачивается в docker-compose и доступен по адресу http://localhost:8090 (порт может отличаться в зависимости от конфигурации).
