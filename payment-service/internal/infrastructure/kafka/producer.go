@@ -18,7 +18,12 @@ type Producer struct {
 	writer *kafka.Writer
 }
 
-func NewProducer(writer *kafka.Writer) *Producer {
+func NewProducer(brokerAddresses []string) *Producer {
+	writer := &kafka.Writer{
+		Addr:     kafka.TCP(brokerAddresses...),
+		Balancer: &kafka.LeastBytes{},
+	}
+
 	return &Producer{writer: writer}
 }
 
@@ -52,6 +57,17 @@ func (p *Producer) Produce(
 
 	if err := p.writer.WriteMessages(ctx, msg); err != nil {
 		return fmt.Errorf("%s: failed to write message: %w", op, err)
+	}
+
+	return nil
+}
+
+func (p *Producer) Close() error {
+	const op = "kafka.Close"
+
+	err := p.writer.Close()
+	if err != nil {
+		return fmt.Errorf("%s: failed to close writer: %w", op, err)
 	}
 
 	return nil

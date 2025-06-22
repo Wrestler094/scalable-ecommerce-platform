@@ -9,7 +9,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/segmentio/kafka-go"
 	"payment-service/internal/infrastructure/txmanager"
 	"pkg/events"
 
@@ -58,16 +57,6 @@ func Run(cfg *config.Config) {
 
 	runLogger.Info("Redis connected", "addr", cfg.Redis.Addr)
 
-	// Connect Kafka
-	writer := &kafka.Writer{
-		Addr:     kafka.TCP(cfg.Kafka.Brokers...),
-		Balancer: &kafka.LeastBytes{},
-	}
-	producer := kafkainfra.NewProducer(writer)
-	defer writer.Close() // TODO: Сделать через обертку
-
-	runLogger.Info("Kafka producer initialized")
-
 	// Helpers/Deps
 	rawValidator := validator.NewPlaygroundValidator()
 	httpValidator := adapters.NewHttpValidatorAdapter(rawValidator)
@@ -80,12 +69,16 @@ func Run(cfg *config.Config) {
 	outboxRepo := postgres.NewOutboxRepository(pg.DB)
 	idempRepo := redis.NewIdempotencyRepository(rdb.Client)
 
-	// Kafka poller
-	poller := kafkainfra.NewPoller(outboxRepo, producer, baseLogger, events.TopicPayments, 5*time.Second, 100)
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	// Kafka
+	producer := kafkainfra.NewProducer(cfg.Kafka.Brokers)
+	defer producer.Close()
 
-	go poller.Run(ctx) // TODO: Подумать как лучше закрывать
+	runLogger.Info("Kafka producer initialized")
+
+	poller := kafkainfra.NewPoller(outboxRepo, producer, baseLogger, events.TopicPayments, 5*time.Second, 100)
+	ctx, pollerCancel := context.WithCancel(context.Background())
+	go poller.Run(ctx)
+
 	runLogger.Info("Kafka poller initialized")
 
 	// Use-Cases
@@ -137,4 +130,6 @@ func Run(cfg *config.Config) {
 	} else {
 		runLogger.Info("HTTP server gracefully stopped")
 	}
+
+	pollerCancel()
 }
