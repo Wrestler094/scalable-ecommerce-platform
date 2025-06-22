@@ -99,8 +99,8 @@ func Run(cfg *config.Config) {
 
 	cancel()
 	if err := consumer.Close(); err != nil {
-		runLogger.WithError(err).Error("Consumer close failed")
+		runLogger.WithError(err).Error("Failed to close consumer")
+	} else {
+		runLogger.Info("Kafka consumer closed successfully")
 	}
-
-	runLogger.Info("Kafka reader closed")
 }
