@@ -68,7 +68,7 @@ func (h *PaymentHandler) Pay(w http.ResponseWriter, r *http.Request) {
 				WithError(err).
 				Error("payment failed", "command", payCommand)
 
-			httphelper.RespondError(w, http.StatusInternalServerError, "internal error")
+			httphelper.RespondError(w, http.StatusInternalServerError, "failed to process payment")
 			return
 		}
 

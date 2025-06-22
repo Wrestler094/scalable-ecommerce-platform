@@ -51,7 +51,7 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 			WithError(err).
 			Error("failed to register user")
 
-		httphelper.RespondError(w, http.StatusInternalServerError, "something went wrong")
+		httphelper.RespondError(w, http.StatusInternalServerError, "failed to register user")
 		return
 	}
 
@@ -84,7 +84,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 			WithError(err).
 			Error("failed to login user")
 
-		httphelper.RespondError(w, http.StatusInternalServerError, "something went wrong")
+		httphelper.RespondError(w, http.StatusInternalServerError, "failed to login user")
 		return
 	}
 
@@ -138,7 +138,7 @@ func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
 			WithError(err).
 			Error("failed to logout user")
 
-		httphelper.RespondError(w, http.StatusInternalServerError, "something went wrong")
+		httphelper.RespondError(w, http.StatusInternalServerError, "failed to logout user")
 		return
 	}
 
