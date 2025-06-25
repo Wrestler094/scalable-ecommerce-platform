@@ -1,5 +1,5 @@
 .PHONY: user-up user-down catalog-up catalog-down cart-up cart-down \
-        payment-up payment-down kafka-up kafka-down \
+        order-up order-down payment-up payment-down kafka-up kafka-down \
         monitoring-up monitoring-down network-create \
         all-up all-down infra-up infra-down
 
@@ -8,6 +8,7 @@ DEPLOY_DIR := ./deploy
 USER_DEPLOY := $(DEPLOY_DIR)/user
 CATALOG_DEPLOY := $(DEPLOY_DIR)/catalog
 CART_DEPLOY := $(DEPLOY_DIR)/cart
+ORDER_DEPLOY := $(DEPLOY_DIR)/order
 PAYMENT_DEPLOY := $(DEPLOY_DIR)/payment
 NOTIFICATION_DEPLOY := $(DEPLOY_DIR)/notification
 KAFKA_DEPLOY := $(DEPLOY_DIR)/kafka
@@ -54,6 +55,16 @@ cart-up: network-create
 cart-down:
 	docker compose -f $(CART_COMPOSE) --env-file $(CART_ENV) down
 
+# === ORDER SERVICE ===
+ORDER_COMPOSE := $(ORDER_DEPLOY)/docker-compose.yml
+ORDER_ENV := $(ORDER_DEPLOY)/order.env
+
+order-up: network-create kafka-up
+	docker compose -f $(ORDER_COMPOSE) --env-file $(ORDER_ENV) up -d --build
+
+order-down:
+	docker compose -f $(ORDER_COMPOSE) --env-file $(ORDER_ENV) down
+
 # === PAYMENT SERVICE ===
 PAYMENT_COMPOSE := $(PAYMENT_DEPLOY)/docker-compose.yml
 PAYMENT_ENV := $(PAYMENT_DEPLOY)/payment.env
@@ -99,6 +110,6 @@ infra-up: monitoring-up kafka-up
 infra-down: kafka-down monitoring-down
 
 # === ALL SERVICES ===
-all-up: infra-up user-up catalog-up cart-up payment-up
+all-up: infra-up user-up catalog-up cart-up order-up payment-up notification-up
 
-all-down: payment-down cart-down catalog-down user-down infra-down
+all-down: notification-down payment-down order-down cart-down catalog-down user-down infra-down

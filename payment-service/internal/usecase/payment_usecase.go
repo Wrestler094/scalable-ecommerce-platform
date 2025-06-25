@@ -6,20 +6,22 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"payment-service/internal/domain"
+
 	"pkg/events"
+
+	"payment-service/internal/domain"
 )
 
 type PaymentUseCase struct {
 	paymentRepo     domain.PaymentRepository
-	outboxWriter    domain.OutboxWriter
+	outboxWriter    domain.OutboxWriter[events.PaymentSuccessfulPayload]
 	idempotencyRepo domain.IdempotencyRepository
 	txManager       domain.TxManager
 }
 
 func NewPaymentUseCase(
 	paymentRepo domain.PaymentRepository,
-	outbox domain.OutboxWriter,
+	outbox domain.OutboxWriter[events.PaymentSuccessfulPayload],
 	idempotencyRepo domain.IdempotencyRepository,
 	txManager domain.TxManager,
 ) *PaymentUseCase {
@@ -46,29 +48,29 @@ func (uc *PaymentUseCase) ProcessPayment(ctx context.Context, cmd domain.PayComm
 	// 2. Всё бизнес-действие — внутри транзакции
 	err = uc.txManager.WithinTx(ctx, func(txCtx context.Context) error {
 		payment := domain.Payment{
-			OrderID:   cmd.OrderID,
+			OrderUUID: cmd.OrderUUID,
 			UserID:    cmd.UserID,
 			Amount:    cmd.Amount,
 			CreatedAt: time.Now().UTC(),
 		}
 
-		if err := uc.paymentRepo.Create(txCtx, payment); err != nil {
+		if err = uc.paymentRepo.Create(txCtx, payment); err != nil {
 			return fmt.Errorf("%s: failed to create payment: %w", op, err)
 		}
 
 		// TODO: Подумать над тем, что передавать
-		event := domain.OutboxEvent{
+		event := domain.OutboxEvent[events.PaymentSuccessfulPayload]{
 			EventID:   uuid.New(),
 			EventType: events.EventPaymentSuccessful,
 			Timestamp: time.Now(),
-			Payload: map[string]any{
-				"order_id": cmd.OrderID,
-				"user_id":  cmd.UserID,
-				"amount":   cmd.Amount,
+			Payload: events.PaymentSuccessfulPayload{
+				OrderUUID: cmd.OrderUUID.String(),
+				UserID:    cmd.UserID,
+				Amount:    cmd.Amount,
 			},
 		}
 
-		if err := uc.outboxWriter.Write(txCtx, event); err != nil {
+		if err = uc.outboxWriter.Write(txCtx, event); err != nil {
 			return fmt.Errorf("%s: failed to write payment event to outbox: %w", op, err)
 		}
 

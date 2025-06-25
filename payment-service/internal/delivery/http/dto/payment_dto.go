@@ -1,11 +1,15 @@
 package dto
 
+import (
+	"github.com/google/uuid"
+)
+
 // ====== Pay ======
 
 type PayRequest struct {
-	OrderID        int64   `json:"order_id" validate:"required,gt=0"`
-	Amount         float64 `json:"amount" validate:"required,gt=0"`
-	IdempotencyKey string  `json:"idempotency_key" validate:"required"`
+	OrderUUID      uuid.UUID `json:"order_uuid" validate:"required,uuid4"`
+	Amount         float64   `json:"amount" validate:"required,gt=0"`
+	IdempotencyKey string    `json:"idempotency_key" validate:"required"`
 }
 
 type PayResponse struct {

@@ -10,20 +10,21 @@ import (
 	"pkg/events"
 	"pkg/logger"
 
-	"notification-service/internal/domain"
+	"order-service/internal/delivery/kafka/dto"
+	"order-service/internal/domain"
 )
 
 type Consumer struct {
 	reader  *kafka.Reader
 	logger  logger.Logger
-	usecase domain.NotificationUseCase
+	usecase domain.OrderPaymentUseCase
 }
 
 func NewConsumer(
 	brokerAddresses []string,
 	topic string,
 	groupID string,
-	uc domain.NotificationUseCase,
+	uc domain.OrderPaymentUseCase,
 	logger logger.Logger,
 ) *Consumer {
 	reader := kafka.NewReader(kafka.ReaderConfig{
@@ -58,32 +59,23 @@ func (c *Consumer) Start(ctx context.Context) {
 			continue
 		}
 
-		var envelope events.Envelope[events.PaymentSuccessfulPayload]
+		var envelope events.Envelope[dto.PaymentPayload]
 		if err := json.Unmarshal(m.Value, &envelope); err != nil {
 			log.WithError(err).Error("Failed to unmarshal envelope", "message_key", m.Key)
 			continue
 		}
 
 		if envelope.EventType != events.EventPaymentSuccessful {
-			log.Warn("Skipping unsupported event type", "event_type", envelope.EventType)
+			log.Warn("Skipping unsupported event type", "type", envelope.EventType)
 			continue
 		}
 
-		payload := envelope.Payload
-		notif := domain.Notification{
-			UserID:  payload.UserID,
-			To:      "", // TODO: Implement email retrieval from Kafka or User Service
-			Type:    domain.EmailNotification,
-			Subject: "Ваш платёж прошёл успешно",
-			Message: fmt.Sprintf("Спасибо за оплату заказа %s на сумму %.2f₽", payload.OrderUUID, payload.Amount),
-		}
-
-		if err := c.usecase.Send(notif); err != nil {
-			log.WithError(err).Error("Failed to send notification", "message_key", m.Key, "event_id", envelope.EventID)
+		if err := c.usecase.MarkOrderAsPaid(ctx, envelope.Payload.OrderUUID); err != nil {
+			log.WithError(err).Error("Failed to mark order as paid", "message_key", m.Key, "event_id", envelope.EventID)
 			continue
 		}
 
-		log.Info("Notification sent", "order_uuid", payload.OrderUUID)
+		log.Info("Order marked as paid", "order_id", envelope.Payload.OrderUUID, "event_id", envelope.EventID)
 	}
 }
 

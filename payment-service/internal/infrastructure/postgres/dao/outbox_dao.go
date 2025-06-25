@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/google/uuid"
 	"payment-service/internal/domain"
+
+	"github.com/google/uuid"
 )
 
 type OutboxEvent struct {
@@ -15,7 +16,7 @@ type OutboxEvent struct {
 	Payload   json.RawMessage `db:"payload"`
 }
 
-func FromDomainEvent(e domain.OutboxEvent) (OutboxEvent, error) {
+func FromDomainEvent[T any](e domain.OutboxEvent[T]) (OutboxEvent, error) {
 	payloadJSON, err := json.Marshal(e.Payload)
 	if err != nil {
 		return OutboxEvent{}, err
@@ -29,14 +30,14 @@ func FromDomainEvent(e domain.OutboxEvent) (OutboxEvent, error) {
 	}, nil
 }
 
-func (e OutboxEvent) ToDomainEvent() (domain.OutboxEvent, error) {
-	var payload map[string]any
+func ToDomainEvent[T any](e OutboxEvent) (domain.OutboxEvent[T], error) {
+	var payload T
 	err := json.Unmarshal(e.Payload, &payload)
 	if err != nil {
-		return domain.OutboxEvent{}, err
+		return domain.OutboxEvent[T]{}, err
 	}
 
-	return domain.OutboxEvent{
+	return domain.OutboxEvent[T]{
 		EventID:   e.ID,
 		EventType: e.EventType,
 		Timestamp: e.CreatedAt,
@@ -44,22 +45,10 @@ func (e OutboxEvent) ToDomainEvent() (domain.OutboxEvent, error) {
 	}, nil
 }
 
-func FromDomainEventList(events []domain.OutboxEvent) ([]OutboxEvent, error) {
-	result := make([]OutboxEvent, len(events))
+func ToDomainEventList[T any](events []OutboxEvent) ([]domain.OutboxEvent[T], error) {
+	result := make([]domain.OutboxEvent[T], len(events))
 	for i, e := range events {
-		converted, err := FromDomainEvent(e)
-		if err != nil {
-			return nil, err
-		}
-		result[i] = converted
-	}
-	return result, nil
-}
-
-func ToDomainEventList(events []OutboxEvent) ([]domain.OutboxEvent, error) {
-	result := make([]domain.OutboxEvent, len(events))
-	for i, e := range events {
-		converted, err := e.ToDomainEvent()
+		converted, err := ToDomainEvent[T](e)
 		if err != nil {
 			return nil, err
 		}

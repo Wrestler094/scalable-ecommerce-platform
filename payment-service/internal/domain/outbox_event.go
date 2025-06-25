@@ -7,22 +7,22 @@ import (
 	"github.com/google/uuid"
 )
 
-type OutboxEvent struct {
+type OutboxEvent[T any] struct {
 	EventID   uuid.UUID
 	EventType string
 	Timestamp time.Time
-	Payload   map[string]any
+	Payload   T
 }
 
-type OutboxWriter interface {
-	Write(ctx context.Context, evt OutboxEvent) error
+type OutboxWriter[T any] interface {
+	Write(ctx context.Context, evt OutboxEvent[T]) error
 }
 
-type OutboxReader interface {
-	FetchUnpublished(ctx context.Context, limit int) ([]OutboxEvent, error)
+type OutboxReader[T any] interface {
+	FetchUnpublished(ctx context.Context, limit int) ([]OutboxEvent[T], error)
 	MarkPublished(ctx context.Context, id uuid.UUID) error
 }
 
-type EventProducer interface {
-	Produce(ctx context.Context, topic string, eventType string, key uuid.UUID, timestamp time.Time, payload any) error
+type EventProducer[T any] interface {
+	Produce(ctx context.Context, topic string, eventType string, key uuid.UUID, timestamp time.Time, payload T) error
 }

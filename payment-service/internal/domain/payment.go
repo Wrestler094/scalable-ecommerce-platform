@@ -3,19 +3,21 @@ package domain
 import (
 	"context"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type Payment struct {
-	OrderID int64
-	UserID  int64
-	Amount  float64
+	OrderUUID uuid.UUID
+	UserID    int64
+	Amount    float64
 	// TODO: Подумать нужен ли тут CreatedAt
 	CreatedAt time.Time
 }
 
 type PayCommand struct {
 	UserID         int64
-	OrderID        int64
+	OrderUUID      uuid.UUID
 	Amount         float64
 	IdempotencyKey string
 }

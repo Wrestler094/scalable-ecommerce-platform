@@ -5,11 +5,12 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5/middleware"
-	"payment-service/internal/delivery/http/dto"
+
 	"pkg/authenticator"
 	"pkg/httphelper"
 	"pkg/logger"
 
+	"payment-service/internal/delivery/http/dto"
 	"payment-service/internal/domain"
 )
 
@@ -50,32 +51,28 @@ func (h *PaymentHandler) Pay(w http.ResponseWriter, r *http.Request) {
 
 	payCommand := domain.PayCommand{
 		UserID:         userID,
-		OrderID:        req.OrderID,
+		OrderUUID:      req.OrderUUID,
 		Amount:         req.Amount,
 		IdempotencyKey: req.IdempotencyKey,
 	}
 
-	err = h.paymentUC.ProcessPayment(r.Context(), payCommand)
+	err = h.paymentUC.ProcessPayment(ctx, payCommand)
 	if err != nil {
-		if errors.Is(err, domain.ErrDuplicatePayment) {
+		log := h.logger.WithOp(op).WithRequestID(middleware.GetReqID(ctx)).WithError(err)
+
+		switch {
+		case errors.Is(err, domain.ErrDuplicatePayment):
 			http.Error(w, "duplicate payment", http.StatusConflict)
 			return
-		}
 
-		if !errors.Is(err, domain.ErrIdempotencyRegistrationFailed) {
-			h.logger.WithOp(op).
-				WithRequestID(middleware.GetReqID(r.Context())).
-				WithError(err).
-				Error("payment failed", "command", payCommand)
+		case errors.Is(err, domain.ErrIdempotencyRegistrationFailed):
+			log.Warn("idempotency registration failed", "command", payCommand, "user_id", userID)
 
+		default:
+			log.Error("payment failed", "command", payCommand, "user_id", userID)
 			httphelper.RespondError(w, http.StatusInternalServerError, "failed to process payment")
 			return
 		}
-
-		h.logger.WithOp(op).
-			WithRequestID(middleware.GetReqID(r.Context())).
-			WithError(err).
-			Warn("idempotency registration failed", "command", payCommand)
 	}
 
 	httphelper.RespondJSON(w, http.StatusAccepted, dto.PayResponse{

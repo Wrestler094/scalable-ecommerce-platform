@@ -4,13 +4,15 @@ import (
 	"context"
 	"time"
 
-	"payment-service/internal/domain"
+	"pkg/events"
 	"pkg/logger"
+
+	"payment-service/internal/domain"
 )
 
 type Poller struct {
-	reader   domain.OutboxReader
-	producer domain.EventProducer
+	reader   domain.OutboxReader[events.PaymentSuccessfulPayload]
+	producer domain.EventProducer[events.PaymentSuccessfulPayload]
 	logger   logger.Logger
 	topic    string
 	interval time.Duration
@@ -18,8 +20,8 @@ type Poller struct {
 }
 
 func NewPoller(
-	reader domain.OutboxReader,
-	producer domain.EventProducer,
+	reader domain.OutboxReader[events.PaymentSuccessfulPayload],
+	producer domain.EventProducer[events.PaymentSuccessfulPayload],
 	logger logger.Logger,
 	topic string,
 	interval time.Duration,
@@ -52,13 +54,13 @@ func (p *Poller) Run(ctx context.Context) {
 func (p *Poller) process(ctx context.Context) {
 	const op = "kafka.Poller.process"
 
-	events, err := p.reader.FetchUnpublished(ctx, p.batch)
+	unpublishedEvents, err := p.reader.FetchUnpublished(ctx, p.batch)
 	if err != nil {
 		p.logger.WithOp(op).WithError(err).Error("failed to fetch events")
 		return
 	}
 
-	for _, evt := range events {
+	for _, evt := range unpublishedEvents {
 		if err := p.producer.Produce(ctx, p.topic, evt.EventType, evt.EventID, evt.Timestamp, evt.Payload); err != nil {
 			p.logger.WithOp(op).WithError(err).Error("failed to produce events", "event", evt.EventID)
 			continue

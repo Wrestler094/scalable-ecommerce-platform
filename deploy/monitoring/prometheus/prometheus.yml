@@ -13,3 +13,15 @@ scrape_configs:
   - job_name: 'cart-service'
     static_configs:
       - targets: ['cart-service:8080']
+
+  - job_name: 'payment-service'
+    static_configs:
+      - targets: ['payment-service:8080']
+
+  - job_name: 'order-service'
+    static_configs:
+      - targets: ['order-service:8080']
+
+  - job_name: 'notification-service'
+    static_configs:
+      - targets: ['notification-service:8080']

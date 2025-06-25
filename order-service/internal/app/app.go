@@ -9,22 +9,21 @@ import (
 	"syscall"
 	"time"
 
-	"payment-service/internal/infrastructure/txmanager"
-	"pkg/events"
-
 	"pkg/adapters"
 	"pkg/authenticator"
+	"pkg/events"
 	"pkg/healthcheck"
 	"pkg/httpserver"
 	"pkg/logger"
 	"pkg/validator"
 
-	"payment-service/internal/config"
-	"payment-service/internal/delivery/http"
-	kafkainfra "payment-service/internal/infrastructure/kafka"
-	"payment-service/internal/infrastructure/postgres"
-	"payment-service/internal/infrastructure/redis"
-	"payment-service/internal/usecase"
+	"order-service/internal/config"
+	"order-service/internal/delivery/http"
+	"order-service/internal/delivery/kafka"
+	paymentmock "order-service/internal/infrastructure/payment/mock"
+	"order-service/internal/infrastructure/postgres"
+	productmock "order-service/internal/infrastructure/product/mock"
+	"order-service/internal/usecase"
 )
 
 // Run creates objects via constructors and starts the application.
@@ -48,51 +47,44 @@ func Run(cfg *config.Config) {
 
 	runLogger.Info("PostgreSQL connected", "host", cfg.PG.Host, "port", cfg.PG.Port, "db", cfg.PG.DBName)
 
-	// Connect Redis
-	rdb, err := redis.NewClient(cfg.Redis.Addr, cfg.Redis.Password, cfg.Redis.DB)
-	if err != nil {
-		runLogger.Fatal("Redis initialization failed", "error", err)
-	}
-	defer rdb.Close()
-
-	runLogger.Info("Redis connected", "addr", cfg.Redis.Addr)
-
 	// Helpers/Deps
 	rawValidator := validator.NewPlaygroundValidator()
 	httpValidator := adapters.NewHttpValidatorAdapter(rawValidator)
-	JWTAuthenticator := authenticator.NewJWTAuthenticator(cfg.JWT.AccessSecret)
-	txManager := txmanager.NewTxManager(pg.DB, baseLogger)
 	healthManager := healthcheck.NewManager()
+	authenticatorImpl := authenticator.NewJWTAuthenticator(cfg.JWT.AccessSecret)
+
+	// Services
+	productService := productmock.NewMockProductService()
+	paymentService := paymentmock.NewMockPaymentService()
 
 	// Repositories
-	paymentRepo := postgres.NewPaymentRepository(pg.DB)
-	outboxRepo := postgres.NewOutboxRepository(pg.DB)
-	idempRepo := redis.NewIdempotencyRepository(rdb.Client)
-
-	// Kafka
-	producer := kafkainfra.NewProducer[events.PaymentSuccessfulPayload](cfg.Kafka.Brokers)
-	defer producer.Close()
-
-	runLogger.Info("Kafka producer initialized")
-
-	poller := kafkainfra.NewPoller(outboxRepo, producer, baseLogger, events.TopicPayments, 5*time.Second, 100)
-	ctx, pollerCancel := context.WithCancel(context.Background())
-	go poller.Run(ctx)
-
-	runLogger.Info("Kafka poller initialized")
+	orderRepo := postgres.NewOrderRepository(pg.DB)
 
 	// Use-Cases
-	paymentUseCase := usecase.NewPaymentUseCase(paymentRepo, outboxRepo, idempRepo, txManager)
+	orderUseCase := usecase.NewOrderUseCase(orderRepo, productService, paymentService)
+	paymentUseCase := usecase.NewPaymentUseCase(orderRepo)
 
 	// Handlers
-	paymentHandler := http.NewPaymentHandler(paymentUseCase, httpValidator, baseLogger)
+	orderHandler := http.NewOrderHandler(orderUseCase, httpValidator, baseLogger)
 	monitoringHandler := http.NewMonitoringHandler(healthManager)
 
 	// Router
 	router := http.NewRouter(http.Handlers{
-		PaymentHandler:    paymentHandler,
+		OrderHandler:      orderHandler,
 		MonitoringHandler: monitoringHandler,
-	}, JWTAuthenticator)
+	}, authenticatorImpl)
+
+	// Kafka Consumer
+	consumer := kafka.NewConsumer(
+		cfg.Kafka.Brokers,
+		events.TopicPayments,
+		events.OrderGroup,
+		paymentUseCase,
+		baseLogger,
+	)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	go consumer.Start(ctx)
 
 	// HTTP Server
 	httpServer := httpserver.NewServer(
@@ -131,5 +123,10 @@ func Run(cfg *config.Config) {
 		runLogger.Info("HTTP server gracefully stopped")
 	}
 
-	pollerCancel()
+	cancel()
+	if err := consumer.Close(); err != nil {
+		runLogger.WithError(err).Error("Failed to close consumer")
+	} else {
+		runLogger.Info("Kafka consumer closed successfully")
+	}
 }

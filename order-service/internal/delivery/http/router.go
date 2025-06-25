@@ -1,0 +1,49 @@
+package http
+
+import (
+	"net/http"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+
+	"pkg/authenticator"
+)
+
+type Handlers struct {
+	OrderHandler      *OrderHandler
+	MonitoringHandler *MonitoringHandler
+}
+
+func NewRouter(h Handlers, authenticatorImpl authenticator.Authenticator) http.Handler {
+	r := chi.NewRouter()
+
+	// Middlewares
+	r.Use(middleware.RequestID)
+	r.Use(middleware.Recoverer)
+
+	// API namespace
+	r.Route("/api", func(r chi.Router) {
+		// Orders routes
+		r.Route("/orders", func(r chi.Router) {
+			r.Group(authorizedOnly(authenticatorImpl, func(r chi.Router) {
+				r.Get("/", h.OrderHandler.GetOrdersList)
+				r.Post("/", h.OrderHandler.CreateOrder)
+				r.Get("/{id}", h.OrderHandler.GetOrderByID)
+			}))
+		})
+	})
+
+	// Monitoring endpoints
+	r.Handle("/metrics", http.HandlerFunc(h.MonitoringHandler.Metrics))
+	r.Get("/healthz", h.MonitoringHandler.Liveness)
+	r.Get("/readyz", h.MonitoringHandler.Readiness)
+
+	return r
+}
+
+func authorizedOnly(auth authenticator.Authenticator, handler func(r chi.Router)) func(r chi.Router) {
+	return func(r chi.Router) {
+		r.Use(authenticator.RequireRoles(auth, authenticator.User, authenticator.Admin))
+		handler(r)
+	}
+}

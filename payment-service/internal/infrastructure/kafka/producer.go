@@ -6,38 +6,40 @@ import (
 	"fmt"
 	"time"
 
+	"payment-service/internal/domain"
+
+	"pkg/events"
+
 	"github.com/google/uuid"
 	"github.com/segmentio/kafka-go"
-	"payment-service/internal/domain"
-	"pkg/events"
 )
 
-var _ domain.EventProducer = (*Producer)(nil)
+var _ domain.EventProducer[events.PaymentSuccessfulPayload] = (*Producer[events.PaymentSuccessfulPayload])(nil)
 
-type Producer struct {
+type Producer[T any] struct {
 	writer *kafka.Writer
 }
 
-func NewProducer(brokerAddresses []string) *Producer {
+func NewProducer[T any](brokerAddresses []string) *Producer[T] {
 	writer := &kafka.Writer{
 		Addr:     kafka.TCP(brokerAddresses...),
 		Balancer: &kafka.LeastBytes{},
 	}
 
-	return &Producer{writer: writer}
+	return &Producer[T]{writer: writer}
 }
 
-func (p *Producer) Produce(
+func (p *Producer[T]) Produce(
 	ctx context.Context,
 	topic string,
 	eventType string,
 	key uuid.UUID,
 	timestamp time.Time,
-	payload any,
+	payload T,
 ) error {
 	const op = "kafka.Produce"
 
-	envelope := events.Envelope[any]{
+	envelope := events.Envelope[T]{
 		EventID:   key,
 		EventType: eventType,
 		Timestamp: timestamp.Format(time.RFC3339),
@@ -55,14 +57,10 @@ func (p *Producer) Produce(
 		Topic: topic,
 	}
 
-	if err := p.writer.WriteMessages(ctx, msg); err != nil {
-		return fmt.Errorf("%s: failed to write message: %w", op, err)
-	}
-
-	return nil
+	return p.writer.WriteMessages(ctx, msg)
 }
 
-func (p *Producer) Close() error {
+func (p *Producer[T]) Close() error {
 	const op = "kafka.Close"
 
 	err := p.writer.Close()

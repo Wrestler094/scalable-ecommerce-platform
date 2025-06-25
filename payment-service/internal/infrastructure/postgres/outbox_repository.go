@@ -4,15 +4,18 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/uuid"
-	"github.com/jmoiron/sqlx"
+	"pkg/events"
+
 	"payment-service/internal/domain"
 	"payment-service/internal/infrastructure/postgres/dao"
 	"payment-service/internal/infrastructure/txmanager"
+
+	"github.com/google/uuid"
+	"github.com/jmoiron/sqlx"
 )
 
-var _ domain.OutboxWriter = (*OutboxRepository)(nil)
-var _ domain.OutboxReader = (*OutboxRepository)(nil)
+var _ domain.OutboxWriter[events.PaymentSuccessfulPayload] = (*OutboxRepository)(nil)
+var _ domain.OutboxReader[events.PaymentSuccessfulPayload] = (*OutboxRepository)(nil)
 
 type OutboxRepository struct {
 	db *sqlx.DB
@@ -22,7 +25,7 @@ func NewOutboxRepository(db *sqlx.DB) *OutboxRepository {
 	return &OutboxRepository{db: db}
 }
 
-func (r *OutboxRepository) Write(ctx context.Context, evt domain.OutboxEvent) error {
+func (r *OutboxRepository) Write(ctx context.Context, evt domain.OutboxEvent[events.PaymentSuccessfulPayload]) error {
 	const op = "outboxRepository.Write"
 	const query = `
         INSERT INTO outbox (id, event_type, payload, created_at)
@@ -31,7 +34,7 @@ func (r *OutboxRepository) Write(ctx context.Context, evt domain.OutboxEvent) er
 
 	daoEvent, err := dao.FromDomainEvent(evt)
 	if err != nil {
-		return fmt.Errorf("%s: %w", op, err)
+		return fmt.Errorf("%s: failed to convert event: %w", op, err)
 	}
 
 	// Пытаемся получить транзакцию из контекста
@@ -52,9 +55,8 @@ func (r *OutboxRepository) Write(ctx context.Context, evt domain.OutboxEvent) er
 	return nil
 }
 
-func (r *OutboxRepository) FetchUnpublished(ctx context.Context, limit int) ([]domain.OutboxEvent, error) {
+func (r *OutboxRepository) FetchUnpublished(ctx context.Context, limit int) ([]domain.OutboxEvent[events.PaymentSuccessfulPayload], error) {
 	const op = "outboxRepository.FetchUnpublished"
-
 	const query = `
 		SELECT id, event_type, payload, created_at
 		FROM outbox
@@ -68,7 +70,7 @@ func (r *OutboxRepository) FetchUnpublished(ctx context.Context, limit int) ([]d
 		return nil, fmt.Errorf("%s: failed to fetch events: %w", op, err)
 	}
 
-	domainEvents, err := dao.ToDomainEventList(daoEvents)
+	domainEvents, err := dao.ToDomainEventList[events.PaymentSuccessfulPayload](daoEvents)
 	if err != nil {
 		return nil, fmt.Errorf("%s: failed to convert events: %w", op, err)
 	}

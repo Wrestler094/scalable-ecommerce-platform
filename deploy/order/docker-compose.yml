@@ -1,0 +1,37 @@
+services:
+  order-service:
+    build:
+      context: ../../
+      dockerfile: order-service/Dockerfile
+    container_name: order-service
+    restart: unless-stopped
+    depends_on:
+      - order-db
+    env_file:
+      - ./order.env
+    ports:
+      - "${HTTP_EXTERNAL_PORT}:${HTTP_PORT}"
+    networks:
+      - backend
+
+  order-db:
+    image: postgres:15
+    container_name: order-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "${DB_EXTERNAL_PORT}:${DB_PORT}"
+    volumes:
+      - order_db_data:/var/lib/postgresql/data
+    networks:
+      - backend
+
+volumes:
+  order_db_data:
+
+networks:
+  backend:
+    external: true

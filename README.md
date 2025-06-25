@@ -7,6 +7,7 @@
 - `user-service` — регистрация, авторизация (PostgreSQL, Redis)
 - `catalog-service` — продукты, категории (PostgreSQL)
 - `cart-service` — корзина пользователя (Redis)
+- `order-service` — управление заказами (PostgreSQL, Kafka)
 - `payment-service` — заглушка для обработки платежей (PostgreSQL, Redis, Kafka)
 - `notification-service` — отправка уведомлений по email и/или SMS (Kafka)
 - `pkg/` — общие модули: `authenticator`, `roles`, `httphelper`, `validator` и др. 
@@ -41,6 +42,7 @@ scalable-ecommerce-platform/
 │           └── datasources/         # Prometheus datasource provisioning
 ├── user-service/                    # Сервис пользователей (PostgreSQL, Redis)
 ├── catalog-service/                 # Сервис каталога (PostgreSQL)
+├── order-service/                   # Сервис управления заказами (PostgreSQL, Kafka-consumer)
 ├── payment-service/                 # Сервис обработки платежей (PostgreSQL, Redis, Kafka-producer)
 ├── notification-service/            # Сервис уведомлений (Kafka-consumer)
 └── cart-service/                    # Сервис корзины (Redis)
@@ -75,6 +77,7 @@ user-service/
 cp deploy/user/user.env.example deploy/user/user.env
 cp deploy/catalog/catalog.env.example deploy/catalog/catalog.env
 cp deploy/cart/cart.env.example deploy/cart/cart.env
+cp deploy/order/order.env.example deploy/order/order.env
 cp deploy/payment/payment.env.example deploy/payment/payment.env
 cp deploy/notification/notification.env.example deploy/notification/notification.env
 cp deploy/kafka/kafka.env.example deploy/kafka/kafka.env
@@ -86,8 +89,8 @@ cp deploy/kafka/kafka.env.example deploy/kafka/kafka.env
 
 ```bash
 # Отдельные сервисы
-make user-up          # или catalog-up, cart-up, payment-up, notification-up
-make user-down        # или catalog-down, cart-down, payment-down, notification-down
+make user-up          # или catalog-up, cart-up, ...
+make user-down        # или catalog-down, cart-down, ...
 
 # Все сервисы
 make all-up
