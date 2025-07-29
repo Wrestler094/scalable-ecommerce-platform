@@ -14,17 +14,26 @@ const (
 )
 
 func main() {
-	host := os.Getenv("DB_HOST")
-	port := os.Getenv("DB_PORT")
-	user := os.Getenv("DB_USER")
-	password := os.Getenv("DB_PASSWORD")
-	dbname := os.Getenv("DB_NAME")
+	port := getEnvOrFail("DB_PORT")
+	user := getEnvOrFail("DB_USER")
+	password := getEnvOrFail("DB_PASSWORD")
 
-	if host == "" || port == "" || user == "" || password == "" || dbname == "" {
-		log.Fatalf("%s: one of the DB env variables is missing", op)
+	shards := []struct {
+		Name string
+		Host string
+		DB   string
+	}{
+		{
+			Name: "shard-0",
+			Host: getEnvOrFail("DB_HOST_0"),
+			DB:   getEnvOrFail("DB_NAME_0"),
+		},
+		{
+			Name: "shard-1",
+			Host: getEnvOrFail("DB_HOST_1"),
+			DB:   getEnvOrFail("DB_NAME_1"),
+		},
 	}
-
-	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", user, password, host, port, dbname)
 
 	path := os.Getenv("MIGRATIONS_PATH")
 	if path == "" {
@@ -33,9 +42,27 @@ func main() {
 
 	log.Printf("%s: running DB migrations from %q ...", op, path)
 
-	if err := migrator.Run(dsn, path); err != nil {
-		log.Fatalf("%s: migration error: %v", op, err)
+	for _, shard := range shards {
+		dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
+			user, password, shard.Host, port, shard.DB,
+		)
+
+		log.Printf("%s: applying migrations to %s (%s)", op, shard.Name, shard.DB)
+
+		if err := migrator.Run(dsn, path); err != nil {
+			log.Fatalf("%s: migration error on %s: %v", op, shard.Name, err)
+		}
+
+		log.Printf("%s: ✅ migrations applied to %s", op, shard.Name)
 	}
 
-	log.Println("migrations applied successfully")
+	log.Printf("%s: ✅ all migrations completed successfully", op)
+}
+
+func getEnvOrFail(key string) string {
+	val := os.Getenv(key)
+	if val == "" {
+		log.Fatalf("%s: missing required environment variable: %s", op, key)
+	}
+	return val
 }

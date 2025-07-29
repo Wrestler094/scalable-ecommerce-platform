@@ -6,27 +6,13 @@ services:
     container_name: user-service
     restart: unless-stopped
     depends_on:
-      - user-db
       - user-redis
+      - user-db-shard-0
+      - user-db-shard-1
     env_file:
       - ./user.env
     ports:
       - "${HTTP_EXTERNAL_PORT}:${HTTP_PORT}"
-    networks:
-      - backend
-
-  user-db:
-    image: postgres:15
-    container_name: user-db
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-    ports:
-      - "${DB_EXTERNAL_PORT}:${DB_PORT}"
-    volumes:
-      - user_db_data:/var/lib/postgresql/data
     networks:
       - backend
 
@@ -41,9 +27,40 @@ services:
     networks:
       - backend
 
+  user-db-shard-0:
+    image: postgres:15
+    container_name: user-db-shard-0
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME_0}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "${DB_EXTERNAL_PORT_0}:${DB_PORT}"
+    volumes:
+      - user_db_shard_0_data:/var/lib/postgresql/data
+    networks:
+      - backend
+
+  user-db-shard-1:
+    image: postgres:15
+    container_name: user-db-shard-1
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME_1}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "${DB_EXTERNAL_PORT_1}:${DB_PORT}"
+    volumes:
+      - user_db_shard_1_data:/var/lib/postgresql/data
+    networks:
+      - backend
+
 volumes:
-  user_db_data:
   user_redis_data:
+  user_db_shard_0_data:
+  user_db_shard_1_data:
 
 networks:
   backend:

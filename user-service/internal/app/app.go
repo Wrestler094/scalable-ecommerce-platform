@@ -14,6 +14,7 @@ import (
 	"pkg/httpserver"
 	"pkg/logger"
 	"pkg/validator"
+	"user-service/internal/infrastructure/idgenerator"
 
 	"user-service/internal/config"
 	"user-service/internal/delivery/http"
@@ -37,13 +38,13 @@ func Run(cfg *config.Config) {
 	runLogger.Info("Logger initialized", "level", cfg.Log.Level)
 
 	// Connect Postgres
-	pg, err := postgres.NewConnect(cfg.PG.DSN())
+	shardRouter, err := postgres.NewShardRouter(cfg.PGShards)
 	if err != nil {
 		runLogger.Fatal("DB initialization failed", "error", err)
 	}
-	defer pg.Close()
+	defer shardRouter.Close()
 
-	runLogger.Info("PostgreSQL connected", "host", cfg.PG.Host, "port", cfg.PG.Port, "db", cfg.PG.DBName)
+	runLogger.Info("PostgreSQL connected", "shards", len(cfg.PGShards))
 
 	// Connect Redis
 	rdb, err := redisinfra.NewClient(cfg.Redis.Addr, cfg.Redis.Password, cfg.Redis.DB)
@@ -55,6 +56,10 @@ func Run(cfg *config.Config) {
 	runLogger.Info("Redis connected", "addr", cfg.Redis.Addr)
 
 	// Helpers/Deps
+	idGenerator, err := idgenerator.NewSnowflakeGenerator(cfg.Snowflake.NodeID, cfg.Snowflake.Epoch)
+	if err != nil {
+		runLogger.Fatal("Failed to init Snowflake ID generator", "error", err)
+	}
 	tokenManager := jwt.NewManager(cfg.JWT.AccessSecret, time.Duration(cfg.JWT.TokenTTL)*time.Second)
 	passwordHasher := hasher.NewBcryptHasher()
 	rawValidator := validator.NewPlaygroundValidator()
@@ -63,7 +68,8 @@ func Run(cfg *config.Config) {
 	healthManager := healthcheck.NewManager()
 
 	// Repositories
-	userRepo := postgres.NewUserRepository(pg.DB)
+	userRepo := postgres.NewUserRepository(shardRouter, idGenerator)
+
 	cachedUserRepo := postgres.NewCachedUserRepository(userRepo, redisCache, baseLogger)
 	refreshRepo := redisinfra.NewRefreshTokenRepository(rdb.Client)
 
