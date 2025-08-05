@@ -7,6 +7,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 
 	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/authenticator"
+
 	"github.com/Wrestler094/scalable-ecommerce-platform/cart-service/internal/delivery/http/infra"
 	"github.com/Wrestler094/scalable-ecommerce-platform/cart-service/internal/delivery/http/v1"
 )
@@ -21,8 +22,8 @@ func NewRouter(h Handlers, authenticatorImpl authenticator.Authenticator) http.H
 
 	// Middlewares
 	r.Use(middleware.RequestID)
-	r.Use(middleware.Recoverer)
 	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
 
 	// API namespace
 	r.Route("/api", func(r chi.Router) {

@@ -59,13 +59,11 @@ func Run(cfg *config.Config) {
 	productHandler := v1.NewProductHandler(productUseCase, httpValidator)
 	monitoringHandler := infra.NewMonitoringHandler(healthManager)
 
-	v1Handlers := v1.Handlers{
-		ProductHandler:  productHandler,
-		CategoryHandler: categoryHandler,
-	}
-
 	handlers := http.Handlers{
-		V1Handlers:        v1Handlers,
+		V1Handlers: v1.Handlers{
+			ProductHandler:  productHandler,
+			CategoryHandler: categoryHandler,
+		},
 		MonitoringHandler: monitoringHandler,
 	}
 

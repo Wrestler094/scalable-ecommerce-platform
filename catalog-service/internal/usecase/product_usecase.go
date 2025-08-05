@@ -6,12 +6,13 @@ import (
 	"math"
 
 	"github.com/Wrestler094/scalable-ecommerce-platform/catalog-service/internal/domain"
+	"github.com/Wrestler094/scalable-ecommerce-platform/catalog-service/internal/usecase/dto"
 )
 
 type ProductUseCase interface {
-	CreateProduct(ctx context.Context, input CreateProductInput) (*CreateProductOutput, error)
+	CreateProduct(ctx context.Context, input dto.CreateProductInput) (*dto.CreateProductOutput, error)
 	GetProductByID(ctx context.Context, id int64) (*domain.Product, error)
-	UpdateProduct(ctx context.Context, id int64, input UpdateProductInput) (*UpdateProductOutput, error)
+	UpdateProduct(ctx context.Context, id int64, input dto.UpdateProductInput) (*dto.UpdateProductOutput, error)
 	DeleteProduct(ctx context.Context, id int64) error
 	ListProducts(ctx context.Context) ([]domain.Product, error)
 	ListByCategory(ctx context.Context, categoryID int64) ([]domain.Product, error)
@@ -25,7 +26,7 @@ func NewProductUseCase(r domain.ProductRepository) ProductUseCase {
 	return &productUseCase{repo: r}
 }
 
-func (uc *productUseCase) CreateProduct(ctx context.Context, input CreateProductInput) (*CreateProductOutput, error) {
+func (uc *productUseCase) CreateProduct(ctx context.Context, input dto.CreateProductInput) (*dto.CreateProductOutput, error) {
 	p := domain.Product{
 		Name:        input.Name,
 		Description: input.Description,
@@ -36,14 +37,14 @@ func (uc *productUseCase) CreateProduct(ctx context.Context, input CreateProduct
 	if err != nil {
 		return nil, err
 	}
-	return &CreateProductOutput{ID: id}, nil
+	return &dto.CreateProductOutput{ID: id}, nil
 }
 
 func (uc *productUseCase) GetProductByID(ctx context.Context, id int64) (*domain.Product, error) {
 	return uc.repo.FindByID(ctx, id)
 }
 
-func (uc *productUseCase) UpdateProduct(ctx context.Context, id int64, input UpdateProductInput) (*UpdateProductOutput, error) {
+func (uc *productUseCase) UpdateProduct(ctx context.Context, id int64, input dto.UpdateProductInput) (*dto.UpdateProductOutput, error) {
 	existing, err := uc.repo.FindByID(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("find product: %w", err)
@@ -66,7 +67,7 @@ func (uc *productUseCase) UpdateProduct(ctx context.Context, id int64, input Upd
 		return nil, fmt.Errorf("update product: %w", err)
 	}
 
-	return &UpdateProductOutput{
+	return &dto.UpdateProductOutput{
 		ID:          existing.ID,
 		Name:        existing.Name,
 		Description: existing.Description,

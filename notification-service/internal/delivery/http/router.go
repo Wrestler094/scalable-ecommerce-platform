@@ -20,8 +20,8 @@ func NewRouter(h Handlers) http.Handler {
 
 	// Middlewares
 	r.Use(middleware.RequestID)
-	r.Use(middleware.Recoverer)
 	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
 
 	// API namespace
 	r.Route("/api", func(r chi.Router) {

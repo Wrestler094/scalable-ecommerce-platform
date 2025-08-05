@@ -1,4 +1,4 @@
-package usecase
+package dto
 
 // CreateProductInput represents input for creating a product
 type CreateProductInput struct {

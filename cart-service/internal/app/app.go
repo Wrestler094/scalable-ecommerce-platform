@@ -56,12 +56,10 @@ func Run(cfg *config.Config) {
 	cartHandler := v1.NewCartHandler(cartUseCase, httpValidator)
 	monitoringHandler := infra.NewMonitoringHandler(healthManager)
 
-	v1Handlers := v1.Handlers{
-		CartHandler: cartHandler,
-	}
-
 	handlers := http.Handlers{
-		V1Handlers:        v1Handlers,
+		V1Handlers: v1.Handlers{
+			CartHandler: cartHandler,
+		},
 		MonitoringHandler: monitoringHandler,
 	}
 

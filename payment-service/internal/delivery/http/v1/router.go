@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+
 	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/authenticator"
 )
 

@@ -45,13 +45,11 @@ func Run(cfg *config.Config) {
 	// Handlers
 	monitoringHandler := infra.NewMonitoringHandler(healthManager)
 
-	v1Handlers := v1.Handlers{
-		// No handlers yet, but structure ready for future expansion
-	}
-
 	// Router
 	router := http.NewRouter(http.Handlers{
-		V1Handlers:        v1Handlers,
+		V1Handlers: v1.Handlers{
+			// No handlers yet, but structure ready for future expansion
+		},
 		MonitoringHandler: monitoringHandler,
 	})
 

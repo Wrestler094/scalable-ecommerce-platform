@@ -70,13 +70,11 @@ func Run(cfg *config.Config) {
 	orderHandler := v1.NewOrderHandler(orderUseCase, httpValidator, baseLogger)
 	monitoringHandler := infra.NewMonitoringHandler(healthManager)
 
-	v1Handlers := v1.Handlers{
-		OrderHandler: orderHandler,
-	}
-
 	// Router
 	router := http.NewRouter(http.Handlers{
-		V1Handlers:        v1Handlers,
+		V1Handlers: v1.Handlers{
+			OrderHandler: orderHandler,
+		},
 		MonitoringHandler: monitoringHandler,
 	}, authenticatorImpl)
 

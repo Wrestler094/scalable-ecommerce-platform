@@ -10,6 +10,7 @@ import (
 
 	"github.com/Wrestler094/scalable-ecommerce-platform/catalog-service/internal/delivery/http/v1/dto"
 	"github.com/Wrestler094/scalable-ecommerce-platform/catalog-service/internal/usecase"
+	usecaseDTO "github.com/Wrestler094/scalable-ecommerce-platform/catalog-service/internal/usecase/dto"
 )
 
 type ProductHandler struct {
@@ -33,7 +34,7 @@ func (h *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	input := usecase.CreateProductInput{
+	input := usecaseDTO.CreateProductInput{
 		Name:        req.Name,
 		Description: req.Description,
 		Price:       req.Price,
@@ -83,7 +84,7 @@ func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	input := usecase.UpdateProductInput{
+	input := usecaseDTO.UpdateProductInput{
 		Name:        req.Name,
 		Description: req.Description,
 		Price:       req.Price,

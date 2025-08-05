@@ -89,13 +89,11 @@ func Run(cfg *config.Config) {
 	paymentHandler := v1.NewPaymentHandler(paymentUseCase, httpValidator, baseLogger)
 	monitoringHandler := infra.NewMonitoringHandler(healthManager)
 
-	v1Handlers := v1.Handlers{
-		PaymentHandler: paymentHandler,
-	}
-
 	// Router
 	router := http.NewRouter(http.Handlers{
-		V1Handlers:        v1Handlers,
+		V1Handlers: v1.Handlers{
+			PaymentHandler: paymentHandler,
+		},
 		MonitoringHandler: monitoringHandler,
 	}, JWTAuthenticator)
 
