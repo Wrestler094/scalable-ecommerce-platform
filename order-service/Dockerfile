@@ -4,7 +4,7 @@ FROM golang:1.23.0-alpine AS builder
 # Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Копируем только файлы зависимостей
+# Копируем файлы зависимостей для кэширования
 COPY order-service/go.mod order-service/go.sum ./order-service/
 COPY pkg/go.mod pkg/go.sum ./pkg/
 
@@ -17,7 +17,7 @@ WORKDIR /app
 COPY pkg/ ./pkg/
 COPY order-service/ ./order-service/
 
-# Сборка бинарников
+# Статическая сборка бинарников
 WORKDIR /app/order-service
 RUN CGO_ENABLED=0 GOOS=linux go build -o app ./cmd/app && \
     CGO_ENABLED=0 GOOS=linux go build -o migrator ./cmd/migrator
@@ -31,7 +31,7 @@ RUN apk --no-cache add ca-certificates
 # Устанавливаем рабочую директорию
 WORKDIR /home/appuser/
 
-# Копируем два собранных бинарника из builder-этапа
+# Копируем собранные бинарники из builder-этапа
 COPY --from=builder /app/order-service/app .
 COPY --from=builder /app/order-service/migrator .
 COPY --from=builder /app/order-service/migrations ./migrations
