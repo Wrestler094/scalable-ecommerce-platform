@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"order-service/internal/domain"
-	"order-service/internal/infrastructure/postgres/dao"
-
 	"github.com/jmoiron/sqlx"
+
+	"github.com/Wrestler094/scalable-ecommerce-platform/order-service/internal/domain"
+	"github.com/Wrestler094/scalable-ecommerce-platform/order-service/internal/infrastructure/postgres/dao"
 )
 
 var _ domain.OrderRepository = (*OrderRepository)(nil)

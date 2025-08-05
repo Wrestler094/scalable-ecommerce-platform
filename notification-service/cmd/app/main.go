@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"notification-service/internal/app"
-	"notification-service/internal/config"
+	"github.com/Wrestler094/scalable-ecommerce-platform/notification-service/internal/app"
+	"github.com/Wrestler094/scalable-ecommerce-platform/notification-service/internal/config"
 )
 
 func main() {

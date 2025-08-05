@@ -8,7 +8,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 
-	"user-service/internal/config"
+	"github.com/Wrestler094/scalable-ecommerce-platform/user-service/internal/config"
 )
 
 type ShardRouter struct {

@@ -1,8 +1,9 @@
 package dto
 
 import (
-	"order-service/internal/domain"
 	"time"
+
+	"github.com/Wrestler094/scalable-ecommerce-platform/order-service/internal/domain"
 )
 
 type OrderItem struct {

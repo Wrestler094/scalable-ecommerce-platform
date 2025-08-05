@@ -3,7 +3,7 @@ package dao
 import (
 	"time"
 
-	"order-service/internal/domain"
+	"github.com/Wrestler094/scalable-ecommerce-platform/order-service/internal/domain"
 )
 
 type DBOrder struct {

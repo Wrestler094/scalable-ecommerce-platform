@@ -7,12 +7,12 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 
-	"pkg/authenticator"
-	"pkg/httphelper"
-	"pkg/logger"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/authenticator"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/httphelper"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/logger"
 
-	"order-service/internal/delivery/http/dto"
-	"order-service/internal/domain"
+	"github.com/Wrestler094/scalable-ecommerce-platform/order-service/internal/delivery/http/dto"
+	"github.com/Wrestler094/scalable-ecommerce-platform/order-service/internal/domain"
 )
 
 type OrderHandler struct {

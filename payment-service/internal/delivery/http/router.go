@@ -5,7 +5,8 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"pkg/authenticator"
+
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/authenticator"
 )
 
 type Handlers struct {

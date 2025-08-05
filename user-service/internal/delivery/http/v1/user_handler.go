@@ -1,14 +1,15 @@
-package http
+package v1
 
 import (
 	"errors"
 	"net/http"
 
 	"github.com/go-chi/chi/v5/middleware"
-	"pkg/httphelper"
-	"pkg/logger"
-	"user-service/internal/delivery/http/dto"
-	"user-service/internal/domain"
+
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/httphelper"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/logger"
+	"github.com/Wrestler094/scalable-ecommerce-platform/user-service/internal/delivery/http/v1/dto"
+	"github.com/Wrestler094/scalable-ecommerce-platform/user-service/internal/domain"
 )
 
 type UserHandler struct {

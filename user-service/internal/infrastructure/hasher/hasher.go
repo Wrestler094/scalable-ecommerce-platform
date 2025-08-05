@@ -4,9 +4,9 @@ import (
 	"errors"
 	"fmt"
 
-	"user-service/internal/domain"
-
 	"golang.org/x/crypto/bcrypt"
+
+	"github.com/Wrestler094/scalable-ecommerce-platform/user-service/internal/domain"
 )
 
 var _ domain.PasswordHasher = (*BcryptHasher)(nil)

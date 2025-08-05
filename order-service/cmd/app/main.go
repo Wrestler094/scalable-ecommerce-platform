@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"order-service/internal/app"
-	"order-service/internal/config"
+	"github.com/Wrestler094/scalable-ecommerce-platform/order-service/internal/app"
+	"github.com/Wrestler094/scalable-ecommerce-platform/order-service/internal/config"
 )
 
 func main() {

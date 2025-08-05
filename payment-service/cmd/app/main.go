@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"payment-service/internal/app"
-	"payment-service/internal/config"
+	"github.com/Wrestler094/scalable-ecommerce-platform/payment-service/internal/app"
+	"github.com/Wrestler094/scalable-ecommerce-platform/payment-service/internal/config"
 )
 
 func main() {

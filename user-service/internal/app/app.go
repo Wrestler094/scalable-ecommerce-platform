@@ -8,21 +8,23 @@ import (
 	"syscall"
 	"time"
 
-	"pkg/adapters"
-	"pkg/cache"
-	"pkg/healthcheck"
-	"pkg/httpserver"
-	"pkg/logger"
-	"pkg/validator"
-	"user-service/internal/infrastructure/idgenerator"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/adapters"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/cache"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/healthcheck"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/httpserver"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/logger"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/validator"
 
-	"user-service/internal/config"
-	"user-service/internal/delivery/http"
-	"user-service/internal/infrastructure/hasher"
-	"user-service/internal/infrastructure/jwt"
-	"user-service/internal/infrastructure/postgres"
-	redisinfra "user-service/internal/infrastructure/redis"
-	"user-service/internal/usecase"
+	"github.com/Wrestler094/scalable-ecommerce-platform/user-service/internal/config"
+	"github.com/Wrestler094/scalable-ecommerce-platform/user-service/internal/delivery/http"
+	"github.com/Wrestler094/scalable-ecommerce-platform/user-service/internal/delivery/http/infra"
+	"github.com/Wrestler094/scalable-ecommerce-platform/user-service/internal/delivery/http/v1"
+	"github.com/Wrestler094/scalable-ecommerce-platform/user-service/internal/infrastructure/hasher"
+	"github.com/Wrestler094/scalable-ecommerce-platform/user-service/internal/infrastructure/idgenerator"
+	"github.com/Wrestler094/scalable-ecommerce-platform/user-service/internal/infrastructure/jwt"
+	"github.com/Wrestler094/scalable-ecommerce-platform/user-service/internal/infrastructure/postgres"
+	redisinfra "github.com/Wrestler094/scalable-ecommerce-platform/user-service/internal/infrastructure/redis"
+	"github.com/Wrestler094/scalable-ecommerce-platform/user-service/internal/usecase"
 )
 
 // Run creates objects via constructors and starts the application.
@@ -77,12 +79,14 @@ func Run(cfg *config.Config) {
 	userUseCase := usecase.NewUserUseCase(cachedUserRepo, refreshRepo, tokenManager, passwordHasher)
 
 	// Handlers
-	userHandler := http.NewUserHandler(userUseCase, httpValidator, baseLogger)
-	monitoringHandler := http.NewMonitoringHandler(healthManager)
+	userHandler := v1.NewUserHandler(userUseCase, httpValidator, baseLogger)
+	monitoringHandler := infra.NewMonitoringHandler(healthManager)
 
 	// Router
 	router := http.NewRouter(http.Handlers{
-		UserHandler:       userHandler,
+		V1Handlers: v1.Handlers{
+			UserHandler: userHandler,
+		},
 		MonitoringHandler: monitoringHandler,
 	})
 

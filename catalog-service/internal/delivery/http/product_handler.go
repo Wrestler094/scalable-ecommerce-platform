@@ -3,13 +3,13 @@ package http
 import (
 	"net/http"
 	"strconv"
-	
-	"catalog-service/internal/delivery/http/dto"
-	"catalog-service/internal/usecase"
-
-	"pkg/httphelper"
 
 	"github.com/go-chi/chi/v5"
+
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/httphelper"
+
+	"github.com/Wrestler094/scalable-ecommerce-platform/catalog-service/internal/delivery/http/dto"
+	"github.com/Wrestler094/scalable-ecommerce-platform/catalog-service/internal/usecase"
 )
 
 type ProductHandler struct {

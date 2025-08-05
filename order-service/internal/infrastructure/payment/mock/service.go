@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"order-service/internal/domain"
+	"github.com/Wrestler094/scalable-ecommerce-platform/order-service/internal/domain"
 )
 
 // MockPaymentService возвращает фиктивную ссылку на оплату

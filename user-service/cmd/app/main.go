@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"user-service/internal/app"
-	"user-service/internal/config"
+	"github.com/Wrestler094/scalable-ecommerce-platform/user-service/internal/app"
+	"github.com/Wrestler094/scalable-ecommerce-platform/user-service/internal/config"
 )
 
 func main() {

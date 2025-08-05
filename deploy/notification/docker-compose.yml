@@ -7,8 +7,6 @@ services:
     restart: unless-stopped
     env_file:
       - ./notification.env
-    ports:
-      - "${HTTP_EXTERNAL_PORT}:${HTTP_PORT}"
     networks:
       - backend
 

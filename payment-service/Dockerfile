@@ -4,10 +4,7 @@ FROM golang:1.23.0-alpine AS builder
 # Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Копируем go.work
-COPY payment-service/go.work ./payment-service/
-
-# Копируем только файлы зависимостей для кэширования
+# Копируем файлы зависимостей для кэширования
 COPY payment-service/go.mod payment-service/go.sum ./payment-service/
 COPY pkg/go.mod pkg/go.sum ./pkg/
 
@@ -41,4 +38,5 @@ COPY --from=builder /app/payment-service/migrations ./migrations
 
 RUN chmod +x ./app ./migrator
 
+# Команда запуска (миграции + приложение)
 CMD sh -c "./migrator && ./app"

@@ -1,8 +1,8 @@
 package adapters
 
 import (
-	"pkg/httphelper"
-	"pkg/validator"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/httphelper"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/validator"
 )
 
 // HttpValidatorAdapter адаптирует интерфейс validator.Validator к интерфейсу httphelper.Validator.

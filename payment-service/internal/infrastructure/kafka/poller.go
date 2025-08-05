@@ -4,10 +4,10 @@ import (
 	"context"
 	"time"
 
-	"pkg/events"
-	"pkg/logger"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/events"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/logger"
 
-	"payment-service/internal/domain"
+	"github.com/Wrestler094/scalable-ecommerce-platform/payment-service/internal/domain"
 )
 
 type Poller struct {

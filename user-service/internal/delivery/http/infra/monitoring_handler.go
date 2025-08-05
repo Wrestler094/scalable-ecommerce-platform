@@ -1,11 +1,11 @@
-package http
+package infra
 
 import (
 	"net/http"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
-	"pkg/healthcheck"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/healthcheck"
 )
 
 type MonitoringHandler struct {

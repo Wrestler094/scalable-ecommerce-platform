@@ -3,9 +3,9 @@ package dao
 import (
 	"time"
 
-	"payment-service/internal/domain"
-
 	"github.com/google/uuid"
+
+	"github.com/Wrestler094/scalable-ecommerce-platform/payment-service/internal/domain"
 )
 
 type Payment struct {

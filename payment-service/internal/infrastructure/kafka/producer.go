@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"time"
 
-	"payment-service/internal/domain"
-
-	"pkg/events"
-
 	"github.com/google/uuid"
 	"github.com/segmentio/kafka-go"
+
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/events"
+
+	"github.com/Wrestler094/scalable-ecommerce-platform/payment-service/internal/domain"
 )
 
 var _ domain.EventProducer[events.PaymentSuccessfulPayload] = (*Producer[events.PaymentSuccessfulPayload])(nil)

@@ -7,9 +7,9 @@ import (
 
 	"github.com/google/uuid"
 
-	"pkg/events"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/events"
 
-	"payment-service/internal/domain"
+	"github.com/Wrestler094/scalable-ecommerce-platform/payment-service/internal/domain"
 )
 
 type PaymentUseCase struct {

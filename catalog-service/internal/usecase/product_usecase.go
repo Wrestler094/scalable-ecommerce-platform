@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"math"
 
-	"catalog-service/internal/delivery/http/dto"
-	"catalog-service/internal/domain"
+	"github.com/Wrestler094/scalable-ecommerce-platform/catalog-service/internal/delivery/http/dto"
+	"github.com/Wrestler094/scalable-ecommerce-platform/catalog-service/internal/domain"
 )
 
 type ProductUseCase interface {

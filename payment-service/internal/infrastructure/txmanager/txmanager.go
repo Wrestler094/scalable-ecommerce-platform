@@ -7,7 +7,8 @@ import (
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
-	"pkg/logger"
+
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/logger"
 )
 
 type TxManager struct {

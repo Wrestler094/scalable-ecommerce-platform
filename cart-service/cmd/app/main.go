@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"cart-service/internal/app"
-	"cart-service/internal/config"
+	"github.com/Wrestler094/scalable-ecommerce-platform/cart-service/internal/app"
+	"github.com/Wrestler094/scalable-ecommerce-platform/cart-service/internal/config"
 )
 
 func main() {

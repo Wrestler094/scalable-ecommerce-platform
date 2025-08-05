@@ -3,10 +3,11 @@ package http
 import (
 	"net/http"
 
-	"cart-service/internal/delivery/http/dto"
-	"cart-service/internal/domain"
-	"pkg/authenticator"
-	"pkg/httphelper"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/authenticator"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/httphelper"
+
+	"github.com/Wrestler094/scalable-ecommerce-platform/cart-service/internal/delivery/http/dto"
+	"github.com/Wrestler094/scalable-ecommerce-platform/cart-service/internal/domain"
 )
 
 type CartHandler struct {

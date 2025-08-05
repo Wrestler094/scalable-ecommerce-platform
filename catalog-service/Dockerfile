@@ -4,9 +4,6 @@ FROM golang:1.23.0-alpine AS builder
 # Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Копируем go.work
-COPY catalog-service/go.work ./catalog-service/
-
 # Копируем только файлы зависимостей
 COPY catalog-service/go.mod catalog-service/go.sum ./catalog-service/
 COPY pkg/go.mod pkg/go.sum ./pkg/

@@ -4,24 +4,28 @@ global:
 scrape_configs:
   - job_name: 'user-service'
     static_configs:
-      - targets: ['user-service:8080']
+      - targets: ['user-service:4000']
 
   - job_name: 'catalog-service'
     static_configs:
-      - targets: ['catalog-service:8080']
+      - targets: ['catalog-service:4000']
 
   - job_name: 'cart-service'
     static_configs:
-      - targets: ['cart-service:8080']
+      - targets: ['cart-service:4000']
 
   - job_name: 'payment-service'
     static_configs:
-      - targets: ['payment-service:8080']
+      - targets: ['payment-service:4000']
 
   - job_name: 'order-service'
     static_configs:
-      - targets: ['order-service:8080']
+      - targets: ['order-service:4000']
 
   - job_name: 'notification-service'
     static_configs:
-      - targets: ['notification-service:8080']
+      - targets: ['notification-service:4000']
+
+  - job_name: 'api-gateway'
+    static_configs:
+      - targets: ['api-gateway:8000']

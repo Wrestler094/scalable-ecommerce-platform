@@ -6,12 +6,12 @@ import (
 
 	"github.com/go-chi/chi/v5/middleware"
 
-	"pkg/authenticator"
-	"pkg/httphelper"
-	"pkg/logger"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/authenticator"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/httphelper"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/logger"
 
-	"payment-service/internal/delivery/http/dto"
-	"payment-service/internal/domain"
+	"github.com/Wrestler094/scalable-ecommerce-platform/payment-service/internal/delivery/http/dto"
+	"github.com/Wrestler094/scalable-ecommerce-platform/payment-service/internal/domain"
 )
 
 type PaymentHandler struct {

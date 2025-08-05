@@ -3,7 +3,7 @@ package usecase
 import (
 	"context"
 
-	"cart-service/internal/domain"
+	"github.com/Wrestler094/scalable-ecommerce-platform/cart-service/internal/domain"
 )
 
 var _ domain.CartUseCase = (*cartUseCase)(nil)

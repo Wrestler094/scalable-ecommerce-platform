@@ -6,8 +6,9 @@ import (
 	"strconv"
 	"time"
 
-	"cart-service/internal/domain"
 	"github.com/redis/go-redis/v9"
+
+	"github.com/Wrestler094/scalable-ecommerce-platform/cart-service/internal/domain"
 )
 
 var _ domain.CartRepository = (*redisCartRepo)(nil)

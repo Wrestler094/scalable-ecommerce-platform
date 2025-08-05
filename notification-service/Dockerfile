@@ -4,10 +4,7 @@ FROM golang:1.23.0-alpine AS builder
 # Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Копируем go.work
-COPY notification-service/go.work ./notification-service/
-
-# Копируем только файлы зависимостей
+# Копируем файлы зависимостей для кэширования
 COPY notification-service/go.mod notification-service/go.sum ./notification-service/
 COPY pkg/go.mod pkg/go.sum ./pkg/
 
