@@ -5,14 +5,13 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/Wrestler094/scalable-ecommerce-platform/catalog-service/internal/delivery/http/v1/dto"
 	"github.com/Wrestler094/scalable-ecommerce-platform/catalog-service/internal/domain"
 )
 
 type ProductUseCase interface {
-	CreateProduct(ctx context.Context, req dto.CreateProductRequest) (int64, error)
+	CreateProduct(ctx context.Context, input CreateProductInput) (*CreateProductOutput, error)
 	GetProductByID(ctx context.Context, id int64) (*domain.Product, error)
-	UpdateProduct(ctx context.Context, id int64, req dto.UpdateProductRequest) (domain.Product, error)
+	UpdateProduct(ctx context.Context, id int64, input UpdateProductInput) (*UpdateProductOutput, error)
 	DeleteProduct(ctx context.Context, id int64) error
 	ListProducts(ctx context.Context) ([]domain.Product, error)
 	ListByCategory(ctx context.Context, categoryID int64) ([]domain.Product, error)
@@ -26,44 +25,54 @@ func NewProductUseCase(r domain.ProductRepository) ProductUseCase {
 	return &productUseCase{repo: r}
 }
 
-func (uc *productUseCase) CreateProduct(ctx context.Context, req dto.CreateProductRequest) (int64, error) {
+func (uc *productUseCase) CreateProduct(ctx context.Context, input CreateProductInput) (*CreateProductOutput, error) {
 	p := domain.Product{
-		Name:        req.Name,
-		Description: req.Description,
-		Price:       roundTo2DecimalPlaces(req.Price),
-		CategoryID:  req.CategoryID,
+		Name:        input.Name,
+		Description: input.Description,
+		Price:       roundTo2DecimalPlaces(input.Price),
+		CategoryID:  input.CategoryID,
 	}
-	return uc.repo.Save(ctx, p)
+	id, err := uc.repo.Save(ctx, p)
+	if err != nil {
+		return nil, err
+	}
+	return &CreateProductOutput{ID: id}, nil
 }
 
 func (uc *productUseCase) GetProductByID(ctx context.Context, id int64) (*domain.Product, error) {
 	return uc.repo.FindByID(ctx, id)
 }
 
-func (uc *productUseCase) UpdateProduct(ctx context.Context, id int64, req dto.UpdateProductRequest) (domain.Product, error) {
+func (uc *productUseCase) UpdateProduct(ctx context.Context, id int64, input UpdateProductInput) (*UpdateProductOutput, error) {
 	existing, err := uc.repo.FindByID(ctx, id)
 	if err != nil {
-		return domain.Product{}, fmt.Errorf("find product: %w", err)
+		return nil, fmt.Errorf("find product: %w", err)
 	}
 
-	if req.Name != nil {
-		existing.Name = *req.Name
+	if input.Name != nil {
+		existing.Name = *input.Name
 	}
-	if req.Description != nil {
-		existing.Description = *req.Description
+	if input.Description != nil {
+		existing.Description = *input.Description
 	}
-	if req.Price != nil {
-		existing.Price = roundTo2DecimalPlaces(*req.Price)
+	if input.Price != nil {
+		existing.Price = roundTo2DecimalPlaces(*input.Price)
 	}
-	if req.CategoryID != nil {
-		existing.CategoryID = *req.CategoryID
+	if input.CategoryID != nil {
+		existing.CategoryID = *input.CategoryID
 	}
 
 	if err := uc.repo.Update(ctx, *existing); err != nil {
-		return domain.Product{}, fmt.Errorf("update product: %w", err)
+		return nil, fmt.Errorf("update product: %w", err)
 	}
 
-	return *existing, nil
+	return &UpdateProductOutput{
+		ID:          existing.ID,
+		Name:        existing.Name,
+		Description: existing.Description,
+		Price:       existing.Price,
+		CategoryID:  existing.CategoryID,
+	}, nil
 }
 
 func (uc *productUseCase) DeleteProduct(ctx context.Context, id int64) error {
