@@ -1,4 +1,4 @@
-package http
+package v1
 
 import (
 	"net/http"
@@ -8,8 +8,9 @@ import (
 
 	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/httphelper"
 
-	"github.com/Wrestler094/scalable-ecommerce-platform/catalog-service/internal/delivery/http/dto"
+	"github.com/Wrestler094/scalable-ecommerce-platform/catalog-service/internal/delivery/http/v1/dto"
 	"github.com/Wrestler094/scalable-ecommerce-platform/catalog-service/internal/usecase"
+	usecaseDTO "github.com/Wrestler094/scalable-ecommerce-platform/catalog-service/internal/usecase/dto"
 )
 
 type ProductHandler struct {
@@ -33,13 +34,20 @@ func (h *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := h.productUC.CreateProduct(r.Context(), req)
+	input := usecaseDTO.CreateProductInput{
+		Name:        req.Name,
+		Description: req.Description,
+		Price:       req.Price,
+		CategoryID:  req.CategoryID,
+	}
+
+	output, err := h.productUC.CreateProduct(r.Context(), input)
 	if err != nil {
 		httphelper.RespondError(w, http.StatusInternalServerError, "failed to create product")
 		return
 	}
 
-	httphelper.RespondJSON(w, http.StatusCreated, dto.CreateProductResponse{ID: id})
+	httphelper.RespondJSON(w, http.StatusCreated, dto.CreateProductResponse{ID: output.ID})
 }
 
 func (h *ProductHandler) GetProductByID(w http.ResponseWriter, r *http.Request) {
@@ -76,13 +84,28 @@ func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	updated, err := h.productUC.UpdateProduct(r.Context(), id, req)
+	input := usecaseDTO.UpdateProductInput{
+		Name:        req.Name,
+		Description: req.Description,
+		Price:       req.Price,
+		CategoryID:  req.CategoryID,
+	}
+
+	output, err := h.productUC.UpdateProduct(r.Context(), id, input)
 	if err != nil {
 		httphelper.RespondError(w, http.StatusInternalServerError, "failed to update product")
 		return
 	}
 
-	httphelper.RespondJSON(w, http.StatusOK, dto.UpdateProductResponse(updated))
+	response := dto.UpdateProductResponse{
+		ID:          output.ID,
+		Name:        output.Name,
+		Description: output.Description,
+		Price:       output.Price,
+		CategoryID:  output.CategoryID,
+	}
+
+	httphelper.RespondJSON(w, http.StatusOK, response)
 }
 
 func (h *ProductHandler) DeleteProduct(w http.ResponseWriter, r *http.Request) {

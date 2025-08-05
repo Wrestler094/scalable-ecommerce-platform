@@ -8,6 +8,7 @@ import (
 
 	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/httphelper"
 	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/logger"
+
 	"github.com/Wrestler094/scalable-ecommerce-platform/user-service/internal/delivery/http/v1/dto"
 	"github.com/Wrestler094/scalable-ecommerce-platform/user-service/internal/domain"
 )

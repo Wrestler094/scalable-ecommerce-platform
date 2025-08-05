@@ -19,6 +19,8 @@ import (
 
 	"github.com/Wrestler094/scalable-ecommerce-platform/order-service/internal/config"
 	"github.com/Wrestler094/scalable-ecommerce-platform/order-service/internal/delivery/http"
+	"github.com/Wrestler094/scalable-ecommerce-platform/order-service/internal/delivery/http/infra"
+	"github.com/Wrestler094/scalable-ecommerce-platform/order-service/internal/delivery/http/v1"
 	"github.com/Wrestler094/scalable-ecommerce-platform/order-service/internal/delivery/kafka"
 	paymentmock "github.com/Wrestler094/scalable-ecommerce-platform/order-service/internal/infrastructure/payment/mock"
 	"github.com/Wrestler094/scalable-ecommerce-platform/order-service/internal/infrastructure/postgres"
@@ -65,12 +67,14 @@ func Run(cfg *config.Config) {
 	paymentUseCase := usecase.NewPaymentUseCase(orderRepo)
 
 	// Handlers
-	orderHandler := http.NewOrderHandler(orderUseCase, httpValidator, baseLogger)
-	monitoringHandler := http.NewMonitoringHandler(healthManager)
+	orderHandler := v1.NewOrderHandler(orderUseCase, httpValidator, baseLogger)
+	monitoringHandler := infra.NewMonitoringHandler(healthManager)
 
 	// Router
 	router := http.NewRouter(http.Handlers{
-		OrderHandler:      orderHandler,
+		V1Handlers: v1.Handlers{
+			OrderHandler: orderHandler,
+		},
 		MonitoringHandler: monitoringHandler,
 	}, authenticatorImpl)
 

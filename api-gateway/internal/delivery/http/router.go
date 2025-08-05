@@ -10,9 +10,9 @@ import (
 func NewRouter(proxyHandler ProxyHandler) http.Handler {
 	r := chi.NewRouter()
 
-	r.Use(middleware.Recoverer)
 	r.Use(middleware.RequestID)
 	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
 
 	r.Route("/api", func(r chi.Router) {
 		r.Mount("/user", proxyHandler.HandlerFor("user"))

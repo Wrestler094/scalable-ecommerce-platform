@@ -16,6 +16,8 @@ import (
 
 	"github.com/Wrestler094/scalable-ecommerce-platform/cart-service/internal/config"
 	"github.com/Wrestler094/scalable-ecommerce-platform/cart-service/internal/delivery/http"
+	"github.com/Wrestler094/scalable-ecommerce-platform/cart-service/internal/delivery/http/infra"
+	"github.com/Wrestler094/scalable-ecommerce-platform/cart-service/internal/delivery/http/v1"
 	redisinfra "github.com/Wrestler094/scalable-ecommerce-platform/cart-service/internal/infrastructure/redis"
 	"github.com/Wrestler094/scalable-ecommerce-platform/cart-service/internal/usecase"
 )
@@ -51,11 +53,13 @@ func Run(cfg *config.Config) {
 	cartUseCase := usecase.NewCartUseCase(cartRepository)
 
 	// Handlers
-	cartHandler := http.NewCartHandler(cartUseCase, httpValidator)
-	monitoringHandler := http.NewMonitoringHandler(healthManager)
+	cartHandler := v1.NewCartHandler(cartUseCase, httpValidator)
+	monitoringHandler := infra.NewMonitoringHandler(healthManager)
 
 	handlers := http.Handlers{
-		CartHandler:       cartHandler,
+		V1Handlers: v1.Handlers{
+			CartHandler: cartHandler,
+		},
 		MonitoringHandler: monitoringHandler,
 	}
 
