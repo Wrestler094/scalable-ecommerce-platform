@@ -16,6 +16,8 @@ import (
 
 	"github.com/Wrestler094/scalable-ecommerce-platform/notification-service/internal/config"
 	"github.com/Wrestler094/scalable-ecommerce-platform/notification-service/internal/delivery/http"
+	"github.com/Wrestler094/scalable-ecommerce-platform/notification-service/internal/delivery/http/infra"
+	"github.com/Wrestler094/scalable-ecommerce-platform/notification-service/internal/delivery/http/v1"
 	"github.com/Wrestler094/scalable-ecommerce-platform/notification-service/internal/delivery/kafka"
 	"github.com/Wrestler094/scalable-ecommerce-platform/notification-service/internal/infrastructure/sender"
 	"github.com/Wrestler094/scalable-ecommerce-platform/notification-service/internal/usecase"
@@ -41,10 +43,15 @@ func Run(cfg *config.Config) {
 	notificationUseCase := usecase.NewNotificationUseCase(emailSender)
 
 	// Handlers
-	monitoringHandler := http.NewMonitoringHandler(healthManager)
+	monitoringHandler := infra.NewMonitoringHandler(healthManager)
+
+	v1Handlers := v1.Handlers{
+		// No handlers yet, but structure ready for future expansion
+	}
 
 	// Router
 	router := http.NewRouter(http.Handlers{
+		V1Handlers:        v1Handlers,
 		MonitoringHandler: monitoringHandler,
 	})
 

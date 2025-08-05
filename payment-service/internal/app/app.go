@@ -19,6 +19,8 @@ import (
 
 	"github.com/Wrestler094/scalable-ecommerce-platform/payment-service/internal/config"
 	"github.com/Wrestler094/scalable-ecommerce-platform/payment-service/internal/delivery/http"
+	"github.com/Wrestler094/scalable-ecommerce-platform/payment-service/internal/delivery/http/infra"
+	"github.com/Wrestler094/scalable-ecommerce-platform/payment-service/internal/delivery/http/v1"
 	kafkainfra "github.com/Wrestler094/scalable-ecommerce-platform/payment-service/internal/infrastructure/kafka"
 	"github.com/Wrestler094/scalable-ecommerce-platform/payment-service/internal/infrastructure/postgres"
 	"github.com/Wrestler094/scalable-ecommerce-platform/payment-service/internal/infrastructure/redis"
@@ -84,12 +86,16 @@ func Run(cfg *config.Config) {
 	paymentUseCase := usecase.NewPaymentUseCase(paymentRepo, outboxRepo, idempRepo, txManager)
 
 	// Handlers
-	paymentHandler := http.NewPaymentHandler(paymentUseCase, httpValidator, baseLogger)
-	monitoringHandler := http.NewMonitoringHandler(healthManager)
+	paymentHandler := v1.NewPaymentHandler(paymentUseCase, httpValidator, baseLogger)
+	monitoringHandler := infra.NewMonitoringHandler(healthManager)
+
+	v1Handlers := v1.Handlers{
+		PaymentHandler: paymentHandler,
+	}
 
 	// Router
 	router := http.NewRouter(http.Handlers{
-		PaymentHandler:    paymentHandler,
+		V1Handlers:        v1Handlers,
 		MonitoringHandler: monitoringHandler,
 	}, JWTAuthenticator)
 

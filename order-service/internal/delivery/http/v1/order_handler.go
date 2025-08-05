@@ -1,4 +1,4 @@
-package http
+package v1
 
 import (
 	"errors"
@@ -11,7 +11,7 @@ import (
 	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/httphelper"
 	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/logger"
 
-	"github.com/Wrestler094/scalable-ecommerce-platform/order-service/internal/delivery/http/dto"
+	"github.com/Wrestler094/scalable-ecommerce-platform/order-service/internal/delivery/http/v1/dto"
 	"github.com/Wrestler094/scalable-ecommerce-platform/order-service/internal/domain"
 )
 
