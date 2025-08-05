@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/Wrestler094/scalable-ecommerce-platform/catalog-service/internal/delivery/http/dto"
+	"github.com/Wrestler094/scalable-ecommerce-platform/catalog-service/internal/delivery/http/v1/dto"
 	"github.com/Wrestler094/scalable-ecommerce-platform/catalog-service/internal/domain"
 )
 
