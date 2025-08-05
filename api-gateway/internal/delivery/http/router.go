@@ -23,7 +23,15 @@ func NewRouter(proxyHandler ProxyHandler) http.Handler {
 		r.Mount("/notification", proxyHandler.HandlerFor("notification"))
 	})
 
-	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
+	// Infra namespace (Monitoring endpoints)
+	//r.Handle("/metrics", http.HandlerFunc(h.MonitoringHandler.Metrics))
+	//r.Get("/healthz", h.MonitoringHandler.Liveness)
+	//r.Get("/readyz", h.MonitoringHandler.Readiness)
+
+	r.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("ok"))
+	})
+	r.Get("/readyz", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("ok"))
 	})
 

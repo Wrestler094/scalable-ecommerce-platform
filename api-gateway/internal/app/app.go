@@ -20,12 +20,12 @@ func Run(cfg *config.Config) {
 	runLogger.Info("Logger initialized", "level", cfg.Log.Level)
 
 	handlers := gatewayHTTP.NewStaticProxyHandler(map[string]string{
-		"user":         "http://user-service:8080",
-		"catalog":      "http://catalog-service:8080",
-		"cart":         "http://cart-service:8080",
-		"order":        "http://order-service:8080",
-		"payment":      "http://payment-service:8080",
-		"notification": "http://notification-service:8080",
+		"user":         "http://user-service:4000",
+		"catalog":      "http://catalog-service:4000",
+		"cart":         "http://cart-service:4000",
+		"order":        "http://order-service:4000",
+		"payment":      "http://payment-service:4000",
+		"notification": "http://notification-service:4000",
 	})
 
 	router := gatewayHTTP.NewRouter(handlers)
