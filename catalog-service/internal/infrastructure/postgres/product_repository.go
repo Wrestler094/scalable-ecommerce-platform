@@ -5,10 +5,10 @@ import (
 	"database/sql"
 	"errors"
 
-	"catalog-service/internal/domain"
-	"catalog-service/internal/infrastructure/postgres/dao"
-
 	"github.com/jmoiron/sqlx"
+
+	"github.com/Wrestler094/scalable-ecommerce-platform/catalog-service/internal/domain"
+	"github.com/Wrestler094/scalable-ecommerce-platform/catalog-service/internal/infrastructure/postgres/dao"
 )
 
 type productRepository struct {

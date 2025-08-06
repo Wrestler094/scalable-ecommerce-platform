@@ -6,9 +6,9 @@ import (
 
 	"github.com/jmoiron/sqlx"
 
-	"payment-service/internal/domain"
-	"payment-service/internal/infrastructure/postgres/dao"
-	"payment-service/internal/infrastructure/txmanager"
+	"github.com/Wrestler094/scalable-ecommerce-platform/payment-service/internal/domain"
+	"github.com/Wrestler094/scalable-ecommerce-platform/payment-service/internal/infrastructure/postgres/dao"
+	"github.com/Wrestler094/scalable-ecommerce-platform/payment-service/internal/infrastructure/txmanager"
 )
 
 type paymentRepository struct {

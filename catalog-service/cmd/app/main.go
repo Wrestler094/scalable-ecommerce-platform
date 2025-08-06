@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"catalog-service/internal/app"
-	"catalog-service/internal/config"
+	"github.com/Wrestler094/scalable-ecommerce-platform/catalog-service/internal/app"
+	"github.com/Wrestler094/scalable-ecommerce-platform/catalog-service/internal/config"
 )
 
 func main() {

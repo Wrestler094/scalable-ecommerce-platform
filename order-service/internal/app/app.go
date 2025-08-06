@@ -9,21 +9,23 @@ import (
 	"syscall"
 	"time"
 
-	"pkg/adapters"
-	"pkg/authenticator"
-	"pkg/events"
-	"pkg/healthcheck"
-	"pkg/httpserver"
-	"pkg/logger"
-	"pkg/validator"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/adapters"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/authenticator"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/events"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/healthcheck"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/httpserver"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/logger"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/validator"
 
-	"order-service/internal/config"
-	"order-service/internal/delivery/http"
-	"order-service/internal/delivery/kafka"
-	paymentmock "order-service/internal/infrastructure/payment/mock"
-	"order-service/internal/infrastructure/postgres"
-	productmock "order-service/internal/infrastructure/product/mock"
-	"order-service/internal/usecase"
+	"github.com/Wrestler094/scalable-ecommerce-platform/order-service/internal/config"
+	"github.com/Wrestler094/scalable-ecommerce-platform/order-service/internal/delivery/http"
+	"github.com/Wrestler094/scalable-ecommerce-platform/order-service/internal/delivery/http/infra"
+	"github.com/Wrestler094/scalable-ecommerce-platform/order-service/internal/delivery/http/v1"
+	"github.com/Wrestler094/scalable-ecommerce-platform/order-service/internal/delivery/kafka"
+	paymentmock "github.com/Wrestler094/scalable-ecommerce-platform/order-service/internal/infrastructure/payment/mock"
+	"github.com/Wrestler094/scalable-ecommerce-platform/order-service/internal/infrastructure/postgres"
+	productmock "github.com/Wrestler094/scalable-ecommerce-platform/order-service/internal/infrastructure/product/mock"
+	"github.com/Wrestler094/scalable-ecommerce-platform/order-service/internal/usecase"
 )
 
 // Run creates objects via constructors and starts the application.
@@ -65,12 +67,14 @@ func Run(cfg *config.Config) {
 	paymentUseCase := usecase.NewPaymentUseCase(orderRepo)
 
 	// Handlers
-	orderHandler := http.NewOrderHandler(orderUseCase, httpValidator, baseLogger)
-	monitoringHandler := http.NewMonitoringHandler(healthManager)
+	orderHandler := v1.NewOrderHandler(orderUseCase, httpValidator, baseLogger)
+	monitoringHandler := infra.NewMonitoringHandler(healthManager)
 
 	// Router
 	router := http.NewRouter(http.Handlers{
-		OrderHandler:      orderHandler,
+		V1Handlers: v1.Handlers{
+			OrderHandler: orderHandler,
+		},
 		MonitoringHandler: monitoringHandler,
 	}, authenticatorImpl)
 

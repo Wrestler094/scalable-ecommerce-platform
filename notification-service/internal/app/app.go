@@ -9,16 +9,18 @@ import (
 	"syscall"
 	"time"
 
-	"notification-service/internal/delivery/http"
-	"notification-service/internal/delivery/kafka"
-	"notification-service/internal/infrastructure/sender"
-	"notification-service/internal/usecase"
-	"pkg/events"
-	"pkg/healthcheck"
-	"pkg/httpserver"
-	infralogger "pkg/logger"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/events"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/healthcheck"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/httpserver"
+	infralogger "github.com/Wrestler094/scalable-ecommerce-platform/pkg/logger"
 
-	"notification-service/internal/config"
+	"github.com/Wrestler094/scalable-ecommerce-platform/notification-service/internal/config"
+	"github.com/Wrestler094/scalable-ecommerce-platform/notification-service/internal/delivery/http"
+	"github.com/Wrestler094/scalable-ecommerce-platform/notification-service/internal/delivery/http/infra"
+	"github.com/Wrestler094/scalable-ecommerce-platform/notification-service/internal/delivery/http/v1"
+	"github.com/Wrestler094/scalable-ecommerce-platform/notification-service/internal/delivery/kafka"
+	"github.com/Wrestler094/scalable-ecommerce-platform/notification-service/internal/infrastructure/sender"
+	"github.com/Wrestler094/scalable-ecommerce-platform/notification-service/internal/usecase"
 )
 
 // Run creates objects via constructors and starts the application.
@@ -41,10 +43,13 @@ func Run(cfg *config.Config) {
 	notificationUseCase := usecase.NewNotificationUseCase(emailSender)
 
 	// Handlers
-	monitoringHandler := http.NewMonitoringHandler(healthManager)
+	monitoringHandler := infra.NewMonitoringHandler(healthManager)
 
 	// Router
 	router := http.NewRouter(http.Handlers{
+		V1Handlers: v1.Handlers{
+			// No handlers yet, but structure ready for future expansion
+		},
 		MonitoringHandler: monitoringHandler,
 	})
 

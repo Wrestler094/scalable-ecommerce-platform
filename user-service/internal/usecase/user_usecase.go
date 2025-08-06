@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	"pkg/authenticator"
-	"user-service/internal/domain"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/authenticator"
+	"github.com/Wrestler094/scalable-ecommerce-platform/user-service/internal/domain"
 )
 
 type userUseCase struct {

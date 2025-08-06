@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"user-service/internal/domain"
-
 	"github.com/redis/go-redis/v9"
+
+	"github.com/Wrestler094/scalable-ecommerce-platform/user-service/internal/domain"
 )
 
 var _ domain.RefreshTokenRepository = (*RefreshTokenRepository)(nil)

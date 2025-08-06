@@ -3,7 +3,7 @@ package usecase
 import (
 	"context"
 
-	"catalog-service/internal/domain"
+	"github.com/Wrestler094/scalable-ecommerce-platform/catalog-service/internal/domain"
 )
 
 type CategoryUseCase interface {

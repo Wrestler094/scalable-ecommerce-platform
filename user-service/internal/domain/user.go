@@ -3,7 +3,7 @@ package domain
 import (
 	"context"
 
-	"pkg/authenticator"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/authenticator"
 )
 
 // User представляет публичного пользователя, безопасного для отдачи в API или кеширования.

@@ -17,8 +17,6 @@ services:
     container_name: kafka
     depends_on:
       - zookeeper
-    ports:
-      - "${KAFKA_EXTERNAL_PORT}:${KAFKA_INTERNAL_PORT}"
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:${ZOOKEEPER_CLIENT_PORT}
@@ -34,8 +32,6 @@ services:
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     container_name: kafka-ui
-    ports:
-      - "${KAFKA_UI_EXTERNAL_PORT}:${KAFKA_UI_INTERNAL_PORT}"
     environment:
       KAFKA_CLUSTERS_0_NAME: local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:${KAFKA_INTERNAL_PORT}

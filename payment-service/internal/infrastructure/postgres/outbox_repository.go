@@ -4,14 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	"pkg/events"
-
-	"payment-service/internal/domain"
-	"payment-service/internal/infrastructure/postgres/dao"
-	"payment-service/internal/infrastructure/txmanager"
-
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
+
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/events"
+
+	"github.com/Wrestler094/scalable-ecommerce-platform/payment-service/internal/domain"
+	"github.com/Wrestler094/scalable-ecommerce-platform/payment-service/internal/infrastructure/postgres/dao"
+	"github.com/Wrestler094/scalable-ecommerce-platform/payment-service/internal/infrastructure/txmanager"
 )
 
 var _ domain.OutboxWriter[events.PaymentSuccessfulPayload] = (*OutboxRepository)(nil)

@@ -10,11 +10,11 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
 
-	"pkg/authenticator"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/authenticator"
 
-	"user-service/internal/domain"
-	"user-service/internal/infrastructure/idgenerator"
-	"user-service/internal/infrastructure/postgres/dao"
+	"github.com/Wrestler094/scalable-ecommerce-platform/user-service/internal/domain"
+	"github.com/Wrestler094/scalable-ecommerce-platform/user-service/internal/infrastructure/idgenerator"
+	"github.com/Wrestler094/scalable-ecommerce-platform/user-service/internal/infrastructure/postgres/dao"
 )
 
 var _ domain.UserRepository = (*userRepository)(nil)

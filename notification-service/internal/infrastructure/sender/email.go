@@ -8,8 +8,8 @@ import (
 	"net/url"
 	"strings"
 
-	"notification-service/internal/domain"
-	"notification-service/internal/infrastructure/sender/dto"
+	"github.com/Wrestler094/scalable-ecommerce-platform/notification-service/internal/domain"
+	"github.com/Wrestler094/scalable-ecommerce-platform/notification-service/internal/infrastructure/sender/dto"
 )
 
 type EmailSender struct {

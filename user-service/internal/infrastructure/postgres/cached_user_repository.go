@@ -8,10 +8,11 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5/middleware"
-	"pkg/logger"
-	"user-service/internal/domain"
 
-	"pkg/cache"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/cache"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/logger"
+
+	"github.com/Wrestler094/scalable-ecommerce-platform/user-service/internal/domain"
 )
 
 var _ domain.UserRepository = (*cachedUserRepository)(nil)

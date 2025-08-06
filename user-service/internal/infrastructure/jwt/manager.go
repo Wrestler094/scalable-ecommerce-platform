@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"time"
 
-	"user-service/internal/domain"
-
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+
+	"github.com/Wrestler094/scalable-ecommerce-platform/user-service/internal/domain"
 )
 
 var _ domain.TokenManager = (*Manager)(nil)

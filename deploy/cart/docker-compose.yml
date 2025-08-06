@@ -9,8 +9,6 @@ services:
       - cart-redis
     env_file:
       - ./cart.env
-    ports:
-      - "${HTTP_EXTERNAL_PORT}:${HTTP_PORT}"
     networks:
       - backend
 
@@ -18,8 +16,6 @@ services:
     image: redis:7
     container_name: cart-redis
     restart: unless-stopped
-    ports:
-      - "${REDIS_EXTERNAL_PORT}:${REDIS_PORT}"
     volumes:
       - cart_redis_data:/data
     networks:

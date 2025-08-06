@@ -11,8 +11,6 @@ services:
       - user-db-shard-1
     env_file:
       - ./user.env
-    ports:
-      - "${HTTP_EXTERNAL_PORT}:${HTTP_PORT}"
     networks:
       - backend
 
@@ -20,8 +18,6 @@ services:
     image: redis:7
     container_name: user-redis
     restart: unless-stopped
-    ports:
-      - "${REDIS_EXTERNAL_PORT}:${REDIS_PORT}"
     volumes:
       - user_redis_data:/data
     networks:
@@ -35,8 +31,6 @@ services:
       POSTGRES_DB: ${DB_NAME_0}
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-    ports:
-      - "${DB_EXTERNAL_PORT_0}:${DB_PORT}"
     volumes:
       - user_db_shard_0_data:/var/lib/postgresql/data
     networks:
@@ -50,8 +44,6 @@ services:
       POSTGRES_DB: ${DB_NAME_1}
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-    ports:
-      - "${DB_EXTERNAL_PORT_1}:${DB_PORT}"
     volumes:
       - user_db_shard_1_data:/var/lib/postgresql/data
     networks:

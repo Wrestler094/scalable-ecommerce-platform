@@ -9,22 +9,23 @@ import (
 	"syscall"
 	"time"
 
-	"payment-service/internal/infrastructure/txmanager"
-	"pkg/events"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/adapters"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/authenticator"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/events"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/healthcheck"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/httpserver"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/logger"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/validator"
 
-	"pkg/adapters"
-	"pkg/authenticator"
-	"pkg/healthcheck"
-	"pkg/httpserver"
-	"pkg/logger"
-	"pkg/validator"
-
-	"payment-service/internal/config"
-	"payment-service/internal/delivery/http"
-	kafkainfra "payment-service/internal/infrastructure/kafka"
-	"payment-service/internal/infrastructure/postgres"
-	"payment-service/internal/infrastructure/redis"
-	"payment-service/internal/usecase"
+	"github.com/Wrestler094/scalable-ecommerce-platform/payment-service/internal/config"
+	"github.com/Wrestler094/scalable-ecommerce-platform/payment-service/internal/delivery/http"
+	"github.com/Wrestler094/scalable-ecommerce-platform/payment-service/internal/delivery/http/infra"
+	"github.com/Wrestler094/scalable-ecommerce-platform/payment-service/internal/delivery/http/v1"
+	kafkainfra "github.com/Wrestler094/scalable-ecommerce-platform/payment-service/internal/infrastructure/kafka"
+	"github.com/Wrestler094/scalable-ecommerce-platform/payment-service/internal/infrastructure/postgres"
+	"github.com/Wrestler094/scalable-ecommerce-platform/payment-service/internal/infrastructure/redis"
+	"github.com/Wrestler094/scalable-ecommerce-platform/payment-service/internal/infrastructure/txmanager"
+	"github.com/Wrestler094/scalable-ecommerce-platform/payment-service/internal/usecase"
 )
 
 // Run creates objects via constructors and starts the application.
@@ -85,12 +86,14 @@ func Run(cfg *config.Config) {
 	paymentUseCase := usecase.NewPaymentUseCase(paymentRepo, outboxRepo, idempRepo, txManager)
 
 	// Handlers
-	paymentHandler := http.NewPaymentHandler(paymentUseCase, httpValidator, baseLogger)
-	monitoringHandler := http.NewMonitoringHandler(healthManager)
+	paymentHandler := v1.NewPaymentHandler(paymentUseCase, httpValidator, baseLogger)
+	monitoringHandler := infra.NewMonitoringHandler(healthManager)
 
 	// Router
 	router := http.NewRouter(http.Handlers{
-		PaymentHandler:    paymentHandler,
+		V1Handlers: v1.Handlers{
+			PaymentHandler: paymentHandler,
+		},
 		MonitoringHandler: monitoringHandler,
 	}, JWTAuthenticator)
 

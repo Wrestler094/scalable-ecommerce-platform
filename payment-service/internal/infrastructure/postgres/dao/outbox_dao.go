@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"time"
 
-	"payment-service/internal/domain"
-
 	"github.com/google/uuid"
+
+	"github.com/Wrestler094/scalable-ecommerce-platform/payment-service/internal/domain"
 )
 
 type OutboxEvent struct {

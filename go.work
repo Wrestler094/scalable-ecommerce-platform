@@ -1,0 +1,12 @@
+go 1.23.0
+
+use (
+	./api-gateway
+	./cart-service
+	./catalog-service
+	./notification-service
+	./order-service
+	./payment-service
+	./pkg
+	./user-service
+)

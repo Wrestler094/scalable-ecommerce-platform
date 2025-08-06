@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"order-service/internal/domain"
-
 	"github.com/google/uuid"
+
+	"github.com/Wrestler094/scalable-ecommerce-platform/order-service/internal/domain"
 )
 
 var _ domain.OrderUseCase = (*OrderUseCase)(nil)

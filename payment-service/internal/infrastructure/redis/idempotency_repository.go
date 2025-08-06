@@ -6,7 +6,8 @@ import (
 	"time"
 
 	"github.com/redis/go-redis/v9"
-	"payment-service/internal/domain"
+
+	"github.com/Wrestler094/scalable-ecommerce-platform/payment-service/internal/domain"
 )
 
 var _ domain.IdempotencyRepository = (*IdempotencyRepository)(nil)

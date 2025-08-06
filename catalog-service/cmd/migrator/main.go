@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"pkg/migrator"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/migrator"
 )
 
 const (

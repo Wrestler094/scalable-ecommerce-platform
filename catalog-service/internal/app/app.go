@@ -7,17 +7,19 @@ import (
 	"os/signal"
 	"syscall"
 
-	"catalog-service/internal/config"
-	"catalog-service/internal/delivery/http"
-	"catalog-service/internal/infrastructure/postgres"
-	"catalog-service/internal/usecase"
-	"pkg/healthcheck"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/adapters"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/authenticator"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/healthcheck"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/httpserver"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/logger"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/validator"
 
-	"pkg/adapters"
-	"pkg/authenticator"
-	"pkg/httpserver"
-	"pkg/logger"
-	"pkg/validator"
+	"github.com/Wrestler094/scalable-ecommerce-platform/catalog-service/internal/config"
+	"github.com/Wrestler094/scalable-ecommerce-platform/catalog-service/internal/delivery/http"
+	"github.com/Wrestler094/scalable-ecommerce-platform/catalog-service/internal/delivery/http/infra"
+	"github.com/Wrestler094/scalable-ecommerce-platform/catalog-service/internal/delivery/http/v1"
+	"github.com/Wrestler094/scalable-ecommerce-platform/catalog-service/internal/infrastructure/postgres"
+	"github.com/Wrestler094/scalable-ecommerce-platform/catalog-service/internal/usecase"
 )
 
 // Run creates objects via constructors.
@@ -53,13 +55,15 @@ func Run(cfg *config.Config) {
 	productUseCase := usecase.NewProductUseCase(productRepository)
 
 	// Handlers
-	categoryHandler := http.NewCategoryHandler(categoryUseCase, productUseCase, httpValidator)
-	productHandler := http.NewProductHandler(productUseCase, httpValidator)
-	monitoringHandler := http.NewMonitoringHandler(healthManager)
+	categoryHandler := v1.NewCategoryHandler(categoryUseCase, productUseCase, httpValidator)
+	productHandler := v1.NewProductHandler(productUseCase, httpValidator)
+	monitoringHandler := infra.NewMonitoringHandler(healthManager)
 
 	handlers := http.Handlers{
-		ProductHandler:    productHandler,
-		CategoryHandler:   categoryHandler,
+		V1Handlers: v1.Handlers{
+			ProductHandler:  productHandler,
+			CategoryHandler: categoryHandler,
+		},
 		MonitoringHandler: monitoringHandler,
 	}
 

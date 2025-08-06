@@ -5,11 +5,14 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+
+	"github.com/Wrestler094/scalable-ecommerce-platform/user-service/internal/delivery/http/infra"
+	"github.com/Wrestler094/scalable-ecommerce-platform/user-service/internal/delivery/http/v1"
 )
 
 type Handlers struct {
-	UserHandler       *UserHandler
-	MonitoringHandler *MonitoringHandler
+	V1Handlers        v1.Handlers
+	MonitoringHandler *infra.MonitoringHandler
 }
 
 func NewRouter(h Handlers) http.Handler {
@@ -17,20 +20,16 @@ func NewRouter(h Handlers) http.Handler {
 
 	// Middlewares
 	r.Use(middleware.RequestID)
+	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
 	// API namespace
 	r.Route("/api", func(r chi.Router) {
-		// User auth routes
-		r.Route("/auth", func(r chi.Router) {
-			r.Post("/register", h.UserHandler.Register)
-			r.Post("/login", h.UserHandler.Login)
-			r.Post("/refresh", h.UserHandler.Refresh)
-			r.Post("/logout", h.UserHandler.Logout)
-		})
+		// v1 namespace
+		r.Mount("/v1", v1.NewV1Router(h.V1Handlers))
 	})
 
-	// Monitoring endpoints
+	// Infra namespace (Monitoring endpoints)
 	r.Handle("/metrics", http.HandlerFunc(h.MonitoringHandler.Metrics))
 	r.Get("/healthz", h.MonitoringHandler.Liveness)
 	r.Get("/readyz", h.MonitoringHandler.Readiness)

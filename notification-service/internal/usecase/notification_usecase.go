@@ -1,7 +1,7 @@
 package usecase
 
 import (
-	"notification-service/internal/domain"
+	"github.com/Wrestler094/scalable-ecommerce-platform/notification-service/internal/domain"
 )
 
 type NotificationUseCase struct {

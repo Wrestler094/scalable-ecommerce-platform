@@ -7,10 +7,10 @@ import (
 
 	"github.com/segmentio/kafka-go"
 
-	"pkg/events"
-	"pkg/logger"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/events"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/logger"
 
-	"notification-service/internal/domain"
+	"github.com/Wrestler094/scalable-ecommerce-platform/notification-service/internal/domain"
 )
 
 type Consumer struct {
