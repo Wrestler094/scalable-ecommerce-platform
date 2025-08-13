@@ -5,6 +5,7 @@
         payment-up payment-up-prod payment-down \
         notification-up notification-up-prod notification-down \
         gateway-up gateway-up-prod gateway-down \
+        traefik-up traefik-up-prod traefik-down \
         kafka-up kafka-down \
         monitoring-up monitoring-down \
         network-create \
@@ -98,7 +99,6 @@ order-down:
 	@echo "🛑 Shutting down Order Service..."
 	docker compose -f $(ORDER_COMPOSE) -f $(ORDER_COMPOSE_DEV) --env-file $(ORDER_ENV) down
 
-
 # === PAYMENT SERVICE ===
 PAYMENT_DEPLOY := $(DEPLOY_DIR)/payment
 PAYMENT_COMPOSE := $(PAYMENT_DEPLOY)/docker-compose.yml
@@ -135,16 +135,33 @@ notification-down:
 	@echo "🛑 Shutting down Notification Service..."
 	docker compose -f $(NOTIFICATION_COMPOSE) -f $(NOTIFICATION_COMPOSE_DEV) --env-file $(NOTIFICATION_ENV) down
 
+# === TRAEFIK (REVERSE PROXY) ===
+TRAEFIK_DEPLOY := $(DEPLOY_DIR)/traefik
+TRAEFIK_COMPOSE := $(TRAEFIK_DEPLOY)/docker-compose.yml
+TRAEFIK_COMPOSE_DEV := $(TRAEFIK_DEPLOY)/docker-compose.override.yml
+
+traefik-up: network-create
+	@echo "🔧 Starting Traefik (dev config)..."
+	docker compose -f $(TRAEFIK_COMPOSE) -f $(TRAEFIK_COMPOSE_DEV) up -d --build
+
+traefik-up-prod: network-create
+	@echo "🔧 Starting Traefik (prod config)..."
+	docker compose -f $(TRAEFIK_COMPOSE) up -d --build
+
+traefik-down:
+	@echo "🛑 Shutting down Traefik..."
+	docker compose -f $(TRAEFIK_COMPOSE) -f $(TRAEFIK_COMPOSE_DEV) down
+
 # === API GATEWAY ===
 GATEWAY_DEPLOY := $(DEPLOY_DIR)/gateway
 GATEWAY_COMPOSE := $(GATEWAY_DEPLOY)/docker-compose.yml
 GATEWAY_ENV := $(GATEWAY_DEPLOY)/gateway.env
 
-gateway-up: network-create
+gateway-up: network-create traefik-up
 	@echo "🔧 Starting API Gateway..."
 	docker compose -f $(GATEWAY_COMPOSE) --env-file $(GATEWAY_ENV) up -d --build
 
-gateway-up-prod: network-create
+gateway-up-prod: network-create traefik-up-prod
 	@echo "🔧 Starting API Gateway (prod config)..."
 	docker compose -f $(GATEWAY_COMPOSE) --env-file $(GATEWAY_ENV) up -d --build
 
@@ -189,19 +206,22 @@ monitoring-down:
 
 # === INFRASTRUCTURE ===
 infra-up: network-create
-	@echo "🔧 Starting infrastructure (Monitoring + Kafka)..."
+	@echo "🔧 Starting infrastructure (Traefik + Monitoring + Kafka)..."
+	$(MAKE) traefik-up
 	$(MAKE) monitoring-up
 	$(MAKE) kafka-up
 
 infra-up-prod: network-create
-	@echo "🔧 Starting infrastructure (Monitoring + Kafka) [prod config]..."
+	@echo "🔧 Starting infrastructure (Traefik + Monitoring + Kafka) [prod config]..."
+	$(MAKE) traefik-up-prod
 	$(MAKE) monitoring-up-prod
 	$(MAKE) kafka-up-prod
 
 infra-down:
-	@echo "🛑 Shutting down infrastructure (Kafka + Monitoring)..."
+	@echo "🛑 Shutting down infrastructure (Traefik + Kafka + Monitoring)..."
 	$(MAKE) kafka-down
 	$(MAKE) monitoring-down
+	$(MAKE) traefik-down
 
 # === ALL SERVICES ===
 all-up:
@@ -238,7 +258,6 @@ all-down:
 	@echo "🛑 All services stopped!"
 
 # === CLEAN ===
-
 clean-containers:
 	@echo "🧹 Removing all stopped containers..."
 	docker container prune -f

@@ -5,6 +5,8 @@ services:
       dockerfile: cart-service/Dockerfile
     container_name: cart-service
     restart: unless-stopped
+    expose:
+      - "4000"
     depends_on:
       - cart-redis
     env_file:

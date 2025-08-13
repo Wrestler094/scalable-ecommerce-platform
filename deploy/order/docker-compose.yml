@@ -5,6 +5,8 @@ services:
       dockerfile: order-service/Dockerfile
     container_name: order-service
     restart: unless-stopped
+    expose:
+      - "4000"
     depends_on:
       - order-db
     env_file:

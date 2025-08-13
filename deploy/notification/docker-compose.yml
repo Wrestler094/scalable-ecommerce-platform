@@ -5,6 +5,8 @@ services:
       dockerfile: notification-service/Dockerfile
     container_name: notification-service
     restart: unless-stopped
+    expose:
+      - "4000"
     env_file:
       - ./notification.env
     networks:

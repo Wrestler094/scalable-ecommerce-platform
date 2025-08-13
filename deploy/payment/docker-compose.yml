@@ -5,6 +5,8 @@ services:
       dockerfile: payment-service/Dockerfile
     container_name: payment-service
     restart: unless-stopped
+    expose:
+      - "4000"
     depends_on:
       - payment-db
       - payment-redis

@@ -5,6 +5,8 @@ services:
       dockerfile: catalog-service/Dockerfile
     container_name: catalog-service
     restart: unless-stopped
+    expose:
+      - "4000"
     depends_on:
       - catalog-db
     env_file:

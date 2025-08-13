@@ -1,0 +1,24 @@
+services:
+  traefik:
+    image: traefik:v3.1
+    container_name: traefik
+    restart: unless-stopped
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=backend"
+      - "--entrypoints.web.address=:80"
+      - "--log.level=INFO"
+      # Для Prometheus
+      - "--metrics.prometheus=true"
+      - "--metrics.prometheus.buckets=0.01,0.05,0.1,0.25,0.5,1.0,2.5,5.0"
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - backend
+
+networks:
+  backend:
+    external: true

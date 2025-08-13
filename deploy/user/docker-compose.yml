@@ -5,6 +5,8 @@ services:
       dockerfile: user-service/Dockerfile
     container_name: user-service
     restart: unless-stopped
+    expose:
+      - "4000"
     depends_on:
       - user-redis
       - user-db-shard-0
