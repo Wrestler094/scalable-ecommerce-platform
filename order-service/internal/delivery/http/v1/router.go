@@ -12,24 +12,17 @@ type Handlers struct {
 	OrderHandler *OrderHandler
 }
 
-func NewV1Router(h Handlers, authenticatorImpl authenticator.Authenticator) http.Handler {
+func NewV1Router(h Handlers) http.Handler {
 	r := chi.NewRouter()
 
 	// Orders routes
 	r.Route("/orders", func(r chi.Router) {
-		r.Group(authorizedOnly(authenticatorImpl, func(r chi.Router) {
-			r.Get("/", h.OrderHandler.GetOrdersList)
-			r.Post("/", h.OrderHandler.CreateOrder)
-			r.Get("/{id}", h.OrderHandler.GetOrderByID)
-		}))
+		r.Use(authenticator.RequireAuth())
+
+		r.Get("/", h.OrderHandler.GetOrdersList)
+		r.Post("/", h.OrderHandler.CreateOrder)
+		r.Get("/{id}", h.OrderHandler.GetOrderByID)
 	})
 
 	return r
-}
-
-func authorizedOnly(auth authenticator.Authenticator, handler func(r chi.Router)) func(r chi.Router) {
-	return func(r chi.Router) {
-		r.Use(authenticator.RequireRoles(auth, authenticator.User, authenticator.Admin))
-		handler(r)
-	}
 }

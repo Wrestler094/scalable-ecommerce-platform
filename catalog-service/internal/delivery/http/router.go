@@ -6,8 +6,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
-	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/authenticator"
-
 	"github.com/Wrestler094/scalable-ecommerce-platform/catalog-service/internal/delivery/http/infra"
 	"github.com/Wrestler094/scalable-ecommerce-platform/catalog-service/internal/delivery/http/v1"
 )
@@ -17,7 +15,7 @@ type Handlers struct {
 	MonitoringHandler *infra.MonitoringHandler
 }
 
-func NewRouter(h Handlers, authenticatorImpl authenticator.Authenticator) http.Handler {
+func NewRouter(h Handlers) http.Handler {
 	r := chi.NewRouter()
 
 	// Middlewares
@@ -28,7 +26,7 @@ func NewRouter(h Handlers, authenticatorImpl authenticator.Authenticator) http.H
 	// API namespace
 	r.Route("/api", func(r chi.Router) {
 		// v1 namespace
-		r.Mount("/v1", v1.NewV1Router(h.V1Handlers, authenticatorImpl))
+		r.Mount("/v1", v1.NewV1Router(h.V1Handlers))
 	})
 
 	// Infra namespace (Monitoring endpoints)

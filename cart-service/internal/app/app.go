@@ -8,7 +8,6 @@ import (
 	"syscall"
 
 	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/adapters"
-	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/authenticator"
 	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/healthcheck"
 	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/httpserver"
 	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/logger"
@@ -43,7 +42,6 @@ func Run(cfg *config.Config) {
 	// Helpers/Deps
 	rawValidator := validator.NewPlaygroundValidator()
 	httpValidator := adapters.NewHttpValidatorAdapter(rawValidator)
-	JWTAuthenticator := authenticator.NewJWTAuthenticator(cfg.JWT.AccessSecret)
 	healthManager := healthcheck.NewManager()
 
 	// Repository
@@ -64,7 +62,7 @@ func Run(cfg *config.Config) {
 	}
 
 	// Router
-	router := http.NewRouter(handlers, JWTAuthenticator)
+	router := http.NewRouter(handlers)
 
 	// HTTP Server
 	httpServer := httpserver.NewServer(

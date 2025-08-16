@@ -5,21 +5,27 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+
+	"github.com/Wrestler094/scalable-ecommerce-platform/api-gateway/internal/delivery/http/handlers"
+	gatewayMW "github.com/Wrestler094/scalable-ecommerce-platform/api-gateway/internal/delivery/http/middleware"
 )
 
 type Handlers struct {
-	ProxyHandler      ProxyHandler
-	MonitoringHandler *MonitoringHandler
+	ProxyHandler      *handlers.ProxyHandler
+	MonitoringHandler *handlers.MonitoringHandler
 }
 
-func NewRouter(h Handlers, routes []string) http.Handler {
+func NewRouter(h Handlers, tokenMiddleware *gatewayMW.TokenMiddleware, routes []string) http.Handler {
 	r := chi.NewRouter()
 
 	r.Use(middleware.RequestID)
+	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
 	r.Route("/api", func(r chi.Router) {
+		r.Use(tokenMiddleware.ProcessToken())
+
 		for _, path := range routes {
 			r.Mount("/"+path, h.ProxyHandler.HandlerFor(path))
 		}

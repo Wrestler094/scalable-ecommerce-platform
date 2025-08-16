@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/adapters"
-	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/authenticator"
 	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/events"
 	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/healthcheck"
 	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/httpserver"
@@ -53,7 +52,6 @@ func Run(cfg *config.Config) {
 	rawValidator := validator.NewPlaygroundValidator()
 	httpValidator := adapters.NewHttpValidatorAdapter(rawValidator)
 	healthManager := healthcheck.NewManager()
-	authenticatorImpl := authenticator.NewJWTAuthenticator(cfg.JWT.AccessSecret)
 
 	// Services
 	productService := productmock.NewMockProductService()
@@ -76,7 +74,7 @@ func Run(cfg *config.Config) {
 			OrderHandler: orderHandler,
 		},
 		MonitoringHandler: monitoringHandler,
-	}, authenticatorImpl)
+	})
 
 	// Kafka Consumer
 	consumer := kafka.NewConsumer(

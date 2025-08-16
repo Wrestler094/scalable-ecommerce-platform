@@ -26,9 +26,7 @@ type (
 		Port int `env:"HTTP_PORT,required"`
 	}
 
-	JWT struct {
-		AccessSecret string `env:"ACCESS_SECRET,required"`
-	}
+	JWT struct{}
 
 	Log struct {
 		Level string `env:"LOG_LEVEL,required"`

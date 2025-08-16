@@ -12,23 +12,15 @@ type Handlers struct {
 	PaymentHandler *PaymentHandler
 }
 
-func NewV1Router(h Handlers, authenticatorImpl authenticator.Authenticator) http.Handler {
+func NewV1Router(h Handlers) http.Handler {
 	r := chi.NewRouter()
 
 	// Payment routes
 	r.Route("/payments", func(r chi.Router) {
-		// Authorized only
-		r.Group(authorizedOnly(authenticatorImpl, func(r chi.Router) {
-			r.Post("/pay", h.PaymentHandler.Pay)
-		}))
+		r.Use(authenticator.RequireAuth())
+
+		r.Post("/pay", h.PaymentHandler.Pay)
 	})
 
 	return r
-}
-
-func authorizedOnly(auth authenticator.Authenticator, handler func(r chi.Router)) func(r chi.Router) {
-	return func(r chi.Router) {
-		r.Use(authenticator.RequireRoles(auth, authenticator.User, authenticator.Admin))
-		handler(r)
-	}
 }
