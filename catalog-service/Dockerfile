@@ -7,6 +7,7 @@ WORKDIR /app
 # Копируем файлы зависимостей для кэширования
 COPY catalog-service/go.mod catalog-service/go.sum ./catalog-service/
 COPY pkg/go.mod pkg/go.sum ./pkg/
+COPY gen/go/go.mod gen/go/go.sum ./gen/go/
 
 # Загружаем зависимости
 WORKDIR /app/catalog-service
@@ -15,6 +16,7 @@ RUN go mod download
 # Копируем весь исходный код (и зависимости)
 WORKDIR /app
 COPY pkg/ ./pkg/
+COPY gen/ ./gen/
 COPY catalog-service/ ./catalog-service/
 
 # Статическая сборка бинарников

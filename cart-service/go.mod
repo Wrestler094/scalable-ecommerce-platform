@@ -12,8 +12,6 @@ require (
 
 replace github.com/Wrestler094/scalable-ecommerce-platform/pkg => ../pkg
 
-replace github.com/Wrestler094/scalable-ecommerce-platform/gen/go => ../gen/go
-
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
