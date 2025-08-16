@@ -1,0 +1,16 @@
+services:
+  user-service:
+    ports:
+      - "${HTTP_EXTERNAL_PORT:-4001}:${HTTP_PORT:-4000}"
+
+  user-redis:
+    ports:
+      - "${REDIS_EXTERNAL_PORT:-6380}:${REDIS_PORT:-6379}"
+
+  user-db-shard-0:
+    ports:
+      - "${DB_EXTERNAL_PORT_0:-5433}:${DB_PORT:-5432}"
+
+  user-db-shard-1:
+    ports:
+      - "${DB_EXTERNAL_PORT_1:-5434}:${DB_PORT:-5432}"

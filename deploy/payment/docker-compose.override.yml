@@ -1,0 +1,12 @@
+services:
+  payment-service:
+    ports:
+      - "${HTTP_EXTERNAL_PORT:-4002}:${HTTP_PORT:-4000}"
+
+  payment-db:
+    ports:
+      - "${DB_EXTERNAL_PORT:-5435}:${DB_PORT:-5432}"
+
+  payment-redis:
+    ports:
+      - "${REDIS_EXTERNAL_PORT:-6381}:${REDIS_PORT:-6379}"

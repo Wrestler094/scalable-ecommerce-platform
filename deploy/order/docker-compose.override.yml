@@ -1,0 +1,8 @@
+services:
+  order-service:
+    ports:
+      - "${HTTP_EXTERNAL_PORT:-4003}:${HTTP_PORT:-4000}"
+
+  order-db:
+    ports:
+      - "${DB_EXTERNAL_PORT:-5436}:${DB_PORT:-5432}"

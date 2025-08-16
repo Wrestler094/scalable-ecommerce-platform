@@ -1,0 +1,8 @@
+services:
+  cart-service:
+    ports:
+      - "${HTTP_EXTERNAL_PORT:-4006}:${HTTP_PORT:-4000}"
+
+  cart-redis:
+    ports:
+      - "${REDIS_EXTERNAL_PORT:-6382}:${REDIS_PORT:-6379}"

@@ -1,0 +1,9 @@
+services:
+  catalog-service:
+    ports:
+      - "${HTTP_EXTERNAL_PORT:-4005}:${HTTP_PORT:-4000}"
+      - "${GRPC_EXTERNAL_PORT:-50052}:${GRPC_PORT:-50051}"
+
+  catalog-db:
+    ports:
+      - "${DB_EXTERNAL_PORT:-5437}:${DB_PORT:-5432}"

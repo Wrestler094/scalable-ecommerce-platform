@@ -1,0 +1,4 @@
+services:
+  notification-service:
+    ports:
+      - "${HTTP_EXTERNAL_PORT:-4004}:${HTTP_PORT:-4000}"
