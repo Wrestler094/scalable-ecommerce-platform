@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package catalog.v1;
+
+option go_package = "github.com/Wrestler094/scalable-ecommerce-platform/gen/go/catalog;catalogv1";
+
+service CatalogService {
+  // Получает информацию о нескольких продуктах по их ID
+  rpc GetProducts(GetProductsRequest) returns (GetProductsResponse);
+}
+
+// Модель продукта, которую передаем по сети
+message Product {
+  int64 id = 1;
+  string name = 2;
+  string description = 3;
+  double price = 4;
+  int64 category_id = 5;
+}
+
+message GetProductsRequest {
+  repeated int64 product_ids = 1;
+}
+
+message GetProductsResponse {
+  repeated Product products = 1;
+}

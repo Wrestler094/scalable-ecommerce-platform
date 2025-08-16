@@ -8,12 +8,14 @@ import (
 	"syscall"
 
 	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/adapters"
+	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/grpcserver"
 	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/healthcheck"
 	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/httpserver"
 	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/logger"
 	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/validator"
 
 	"github.com/Wrestler094/scalable-ecommerce-platform/catalog-service/internal/config"
+	grpcHandler "github.com/Wrestler094/scalable-ecommerce-platform/catalog-service/internal/delivery/grpc"
 	"github.com/Wrestler094/scalable-ecommerce-platform/catalog-service/internal/delivery/http"
 	"github.com/Wrestler094/scalable-ecommerce-platform/catalog-service/internal/delivery/http/infra"
 	"github.com/Wrestler094/scalable-ecommerce-platform/catalog-service/internal/delivery/http/v1"
@@ -68,19 +70,29 @@ func Run(cfg *config.Config) {
 	// Router
 	router := http.NewRouter(handlers)
 
+	// gRPC Server
+	gRPCServer := grpcserver.New(
+		grpcserver.Port(fmt.Sprintf("%d", cfg.GRPC.Port)),
+	)
+
+	grpcHandler.RegisterServices(gRPCServer.App, productUseCase, l)
+
 	// HTTP Server
 	httpServer := httpserver.NewServer(
 		httpserver.Port(fmt.Sprintf(":%d", cfg.HTTP.Port)),
 		httpserver.Handler(router),
 	)
 
+	// Start HTTP Server
 	l.Info("HTTP Server running", "port", cfg.HTTP.Port)
-
-	// Start servers
 	err = httpServer.Start()
 	if err != nil {
 		l.Fatal("Failed to start server", "error", err)
 	}
+
+	// Start gRPC Server
+	l.Info("gRPC Server running", "port", cfg.GRPC.Port)
+	gRPCServer.Start()
 
 	healthManager.SetReady(true)
 
@@ -92,7 +104,9 @@ func Run(cfg *config.Config) {
 	case s := <-interrupt:
 		l.Info("Received signal", "signal", s)
 	case err = <-httpServer.Notify():
-		l.Error("httpServer.Notify", "error", err)
+		l.WithError(err).Error("httpServer.Notify")
+	case err = <-gRPCServer.Notify():
+		l.WithError(err).Error("gRPCServer.Notify")
 	}
 
 	healthManager.SetReady(false)
@@ -101,6 +115,11 @@ func Run(cfg *config.Config) {
 	// Shutdown
 	err = httpServer.Shutdown()
 	if err != nil {
-		l.Error("httpServer.Shutdown", "error", err)
+		l.WithError(err).Error("httpServer.Shutdown")
+	}
+
+	err = gRPCServer.Shutdown()
+	if err != nil {
+		l.WithError(err).Error("gRPCServer.Shutdown")
 	}
 }

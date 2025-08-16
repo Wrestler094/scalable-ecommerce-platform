@@ -12,6 +12,7 @@ import (
 type ProductUseCase interface {
 	CreateProduct(ctx context.Context, input dto.CreateProductInput) (*dto.CreateProductOutput, error)
 	GetProductByID(ctx context.Context, id int64) (*domain.Product, error)
+	GetProductsByID(ctx context.Context, ids []int64) ([]domain.Product, error)
 	UpdateProduct(ctx context.Context, id int64, input dto.UpdateProductInput) (*dto.UpdateProductOutput, error)
 	DeleteProduct(ctx context.Context, id int64) error
 	ListProducts(ctx context.Context) ([]domain.Product, error)
@@ -42,6 +43,10 @@ func (uc *productUseCase) CreateProduct(ctx context.Context, input dto.CreatePro
 
 func (uc *productUseCase) GetProductByID(ctx context.Context, id int64) (*domain.Product, error) {
 	return uc.repo.FindByID(ctx, id)
+}
+
+func (uc *productUseCase) GetProductsByID(ctx context.Context, ids []int64) ([]domain.Product, error) {
+	return uc.repo.FindByIDs(ctx, ids)
 }
 
 func (uc *productUseCase) UpdateProduct(ctx context.Context, id int64, input dto.UpdateProductInput) (*dto.UpdateProductOutput, error) {

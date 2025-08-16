@@ -4,6 +4,7 @@ use (
 	./api-gateway
 	./cart-service
 	./catalog-service
+	./gen/go
 	./notification-service
 	./order-service
 	./payment-service

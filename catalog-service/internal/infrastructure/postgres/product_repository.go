@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 
 	"github.com/jmoiron/sqlx"
 
@@ -45,6 +46,28 @@ func (r *productRepository) FindByID(ctx context.Context, id int64) (*domain.Pro
 
 	product := mapToDomain(row)
 	return &product, nil
+}
+
+func (r *productRepository) FindByIDs(ctx context.Context, ids []int64) ([]domain.Product, error) {
+	const op = "productRepository.FindByIDs"
+
+	if len(ids) == 0 {
+		return []domain.Product{}, nil
+	}
+
+	query, args, err := sqlx.In("SELECT id, name, description, price, category_id FROM products WHERE id IN (?);", ids)
+	if err != nil {
+		return nil, fmt.Errorf("%s: failed to build query: %w", op, err)
+	}
+
+	query = r.db.Rebind(query)
+
+	var products []domain.Product
+	if err := r.db.SelectContext(ctx, &products, query, args...); err != nil {
+		return nil, fmt.Errorf("%s: failed to execute query: %w", op, err)
+	}
+
+	return products, nil
 }
 
 func (r *productRepository) FindAll(ctx context.Context) ([]domain.Product, error) {

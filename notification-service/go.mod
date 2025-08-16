@@ -12,6 +12,8 @@ require (
 
 replace github.com/Wrestler094/scalable-ecommerce-platform/pkg => ../pkg
 
+replace github.com/Wrestler094/scalable-ecommerce-platform/gen/go => ../gen/go
+
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
@@ -23,5 +25,5 @@ require (
 	github.com/prometheus/common v0.65.0 // indirect
 	github.com/prometheus/procfs v0.17.0 // indirect
 	golang.org/x/sys v0.34.0 // indirect
-	google.golang.org/protobuf v1.36.6 // indirect
+	google.golang.org/protobuf v1.36.7 // indirect
 )

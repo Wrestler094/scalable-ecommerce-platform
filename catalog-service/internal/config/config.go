@@ -11,6 +11,7 @@ type (
 		App     App
 		HTTP    HTTP
 		JWT     JWT
+		GRPC    GRPC
 		Log     Log
 		PG      PG
 		Metrics Metrics
@@ -24,6 +25,10 @@ type (
 
 	HTTP struct {
 		Port int `env:"HTTP_PORT,required"`
+	}
+
+	GRPC struct {
+		Port int `env:"GRPC_PORT,required"`
 	}
 
 	JWT struct{}

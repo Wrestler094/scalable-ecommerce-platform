@@ -8,7 +8,7 @@
         traefik-up traefik-up-prod traefik-down \
         kafka-up kafka-down \
         monitoring-up monitoring-down \
-        network-create \
+        network-create proto \
         all-up all-up-prod all-down \
         clean-containers clean-images clean-hard \
         infra-up infra-down
@@ -26,6 +26,17 @@ network-create:
 	else \
 		echo "🔧 Network $(NETWORK_NAME) already exists."; \
 	fi
+
+# === PROTO ===
+proto:
+	@echo "🔧 Generating Go code from protobuf definitions..."
+	@mkdir -p gen/go
+	@find gen/go -type f -not \( -name 'go.mod' -o -name 'go.sum' \) -delete
+	@find proto -name "*.proto" -print0 | xargs -0 protoc \
+		--proto_path=proto \
+		--go_out=gen/go --go_opt=paths=source_relative \
+		--go-grpc_out=gen/go --go-grpc_opt=paths=source_relative
+	@echo "🚀 Code generated."
 
 # === USER SERVICE ===
 USER_DEPLOY := $(DEPLOY_DIR)/user
