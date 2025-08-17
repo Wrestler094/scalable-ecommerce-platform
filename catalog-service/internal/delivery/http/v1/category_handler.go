@@ -58,7 +58,7 @@ func (h *CategoryHandler) GetAllCategories(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	var resp dto.GetAllCategoriesResponse
+	resp := make(dto.GetAllCategoriesResponse, 0)
 	for _, c := range categories {
 		resp = append(resp, dto.Category{
 			ID:   c.ID,
