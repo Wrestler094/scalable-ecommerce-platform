@@ -98,27 +98,27 @@ func (x *Product) GetCategoryId() int64 {
 	return 0
 }
 
-type GetProductsRequest struct {
+type GetProductsByIDsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ProductIds    []int64                `protobuf:"varint,1,rep,packed,name=product_ids,json=productIds,proto3" json:"product_ids,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *GetProductsRequest) Reset() {
-	*x = GetProductsRequest{}
+func (x *GetProductsByIDsRequest) Reset() {
+	*x = GetProductsByIDsRequest{}
 	mi := &file_catalog_v1_catalog_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *GetProductsRequest) String() string {
+func (x *GetProductsByIDsRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GetProductsRequest) ProtoMessage() {}
+func (*GetProductsByIDsRequest) ProtoMessage() {}
 
-func (x *GetProductsRequest) ProtoReflect() protoreflect.Message {
+func (x *GetProductsByIDsRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_catalog_v1_catalog_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -130,39 +130,39 @@ func (x *GetProductsRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GetProductsRequest.ProtoReflect.Descriptor instead.
-func (*GetProductsRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetProductsByIDsRequest.ProtoReflect.Descriptor instead.
+func (*GetProductsByIDsRequest) Descriptor() ([]byte, []int) {
 	return file_catalog_v1_catalog_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *GetProductsRequest) GetProductIds() []int64 {
+func (x *GetProductsByIDsRequest) GetProductIds() []int64 {
 	if x != nil {
 		return x.ProductIds
 	}
 	return nil
 }
 
-type GetProductsResponse struct {
+type GetProductsByIDsResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Products      []*Product             `protobuf:"bytes,1,rep,name=products,proto3" json:"products,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *GetProductsResponse) Reset() {
-	*x = GetProductsResponse{}
+func (x *GetProductsByIDsResponse) Reset() {
+	*x = GetProductsByIDsResponse{}
 	mi := &file_catalog_v1_catalog_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *GetProductsResponse) String() string {
+func (x *GetProductsByIDsResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GetProductsResponse) ProtoMessage() {}
+func (*GetProductsByIDsResponse) ProtoMessage() {}
 
-func (x *GetProductsResponse) ProtoReflect() protoreflect.Message {
+func (x *GetProductsByIDsResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_catalog_v1_catalog_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -174,12 +174,12 @@ func (x *GetProductsResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GetProductsResponse.ProtoReflect.Descriptor instead.
-func (*GetProductsResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetProductsByIDsResponse.ProtoReflect.Descriptor instead.
+func (*GetProductsByIDsResponse) Descriptor() ([]byte, []int) {
 	return file_catalog_v1_catalog_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *GetProductsResponse) GetProducts() []*Product {
+func (x *GetProductsByIDsResponse) GetProducts() []*Product {
 	if x != nil {
 		return x.Products
 	}
@@ -198,14 +198,14 @@ const file_catalog_v1_catalog_proto_rawDesc = "" +
 	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x14\n" +
 	"\x05price\x18\x04 \x01(\x01R\x05price\x12\x1f\n" +
 	"\vcategory_id\x18\x05 \x01(\x03R\n" +
-	"categoryId\"5\n" +
-	"\x12GetProductsRequest\x12\x1f\n" +
+	"categoryId\":\n" +
+	"\x17GetProductsByIDsRequest\x12\x1f\n" +
 	"\vproduct_ids\x18\x01 \x03(\x03R\n" +
-	"productIds\"F\n" +
-	"\x13GetProductsResponse\x12/\n" +
-	"\bproducts\x18\x01 \x03(\v2\x13.catalog.v1.ProductR\bproducts2`\n" +
-	"\x0eCatalogService\x12N\n" +
-	"\vGetProducts\x12\x1e.catalog.v1.GetProductsRequest\x1a\x1f.catalog.v1.GetProductsResponseBMZKgithub.com/Wrestler094/scalable-ecommerce-platform/gen/go/catalog;catalogv1b\x06proto3"
+	"productIds\"K\n" +
+	"\x18GetProductsByIDsResponse\x12/\n" +
+	"\bproducts\x18\x01 \x03(\v2\x13.catalog.v1.ProductR\bproducts2o\n" +
+	"\x0eCatalogService\x12]\n" +
+	"\x10GetProductsByIDs\x12#.catalog.v1.GetProductsByIDsRequest\x1a$.catalog.v1.GetProductsByIDsResponseBMZKgithub.com/Wrestler094/scalable-ecommerce-platform/gen/go/catalog;catalogv1b\x06proto3"
 
 var (
 	file_catalog_v1_catalog_proto_rawDescOnce sync.Once
@@ -221,14 +221,14 @@ func file_catalog_v1_catalog_proto_rawDescGZIP() []byte {
 
 var file_catalog_v1_catalog_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_catalog_v1_catalog_proto_goTypes = []any{
-	(*Product)(nil),             // 0: catalog.v1.Product
-	(*GetProductsRequest)(nil),  // 1: catalog.v1.GetProductsRequest
-	(*GetProductsResponse)(nil), // 2: catalog.v1.GetProductsResponse
+	(*Product)(nil),                  // 0: catalog.v1.Product
+	(*GetProductsByIDsRequest)(nil),  // 1: catalog.v1.GetProductsByIDsRequest
+	(*GetProductsByIDsResponse)(nil), // 2: catalog.v1.GetProductsByIDsResponse
 }
 var file_catalog_v1_catalog_proto_depIdxs = []int32{
-	0, // 0: catalog.v1.GetProductsResponse.products:type_name -> catalog.v1.Product
-	1, // 1: catalog.v1.CatalogService.GetProducts:input_type -> catalog.v1.GetProductsRequest
-	2, // 2: catalog.v1.CatalogService.GetProducts:output_type -> catalog.v1.GetProductsResponse
+	0, // 0: catalog.v1.GetProductsByIDsResponse.products:type_name -> catalog.v1.Product
+	1, // 1: catalog.v1.CatalogService.GetProductsByIDs:input_type -> catalog.v1.GetProductsByIDsRequest
+	2, // 2: catalog.v1.CatalogService.GetProductsByIDs:output_type -> catalog.v1.GetProductsByIDsResponse
 	2, // [2:3] is the sub-list for method output_type
 	1, // [1:2] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name

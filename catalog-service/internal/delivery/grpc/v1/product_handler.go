@@ -26,7 +26,7 @@ func NewProductHandler(productUC usecase.ProductUseCase, logger logger.Logger) *
 	}
 }
 
-func (h *ProductHandler) GetProducts(ctx context.Context, req *catalogv1.GetProductsRequest) (*catalogv1.GetProductsResponse, error) {
+func (h *ProductHandler) GetProductsByIDs(ctx context.Context, req *catalogv1.GetProductsByIDsRequest) (*catalogv1.GetProductsByIDsResponse, error) {
 	products, err := h.productUC.GetProductsByID(ctx, req.GetProductIds())
 	if err != nil {
 		if errors.Is(err, domain.ErrProductNotFound) {
@@ -38,7 +38,7 @@ func (h *ProductHandler) GetProducts(ctx context.Context, req *catalogv1.GetProd
 		return nil, status.Errorf(codes.Internal, "internal server error")
 	}
 
-	return &catalogv1.GetProductsResponse{Products: convertProductsToProto(products)}, nil
+	return &catalogv1.GetProductsByIDsResponse{Products: convertProductsToProto(products)}, nil
 }
 
 func convertProductsToProto(products []domain.Product) []*catalogv1.Product {

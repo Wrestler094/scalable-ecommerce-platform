@@ -16,6 +16,7 @@ type (
 		Kafka   Kafka
 		Metrics Metrics
 		Swagger Swagger
+		Clients Clients
 	}
 
 	App struct {
@@ -51,6 +52,12 @@ type (
 
 	Swagger struct {
 		Enabled bool `env:"SWAGGER_ENABLED" envDefault:"false"`
+	}
+
+	Clients struct {
+		Catalog string `env:"CATALOG_SERVICE_URL,required"`
+		// TODO: Uncomment when payment client is implemented
+		// Payment string `env:"PAYMENT_SERVICE_URL,required"`
 	}
 )
 

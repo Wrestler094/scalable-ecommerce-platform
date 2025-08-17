@@ -6,7 +6,7 @@ option go_package = "github.com/Wrestler094/scalable-ecommerce-platform/gen/go/c
 
 service CatalogService {
   // Получает информацию о нескольких продуктах по их ID
-  rpc GetProducts(GetProductsRequest) returns (GetProductsResponse);
+  rpc GetProductsByIDs(GetProductsByIDsRequest) returns (GetProductsByIDsResponse);
 }
 
 // Модель продукта, которую передаем по сети
@@ -18,10 +18,10 @@ message Product {
   int64 category_id = 5;
 }
 
-message GetProductsRequest {
+message GetProductsByIDsRequest {
   repeated int64 product_ids = 1;
 }
 
-message GetProductsResponse {
+message GetProductsByIDsResponse {
   repeated Product products = 1;
 }

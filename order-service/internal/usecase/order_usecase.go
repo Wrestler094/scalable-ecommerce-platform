@@ -13,16 +13,16 @@ import (
 var _ domain.OrderUseCase = (*OrderUseCase)(nil)
 
 type OrderUseCase struct {
-	orderRepo      domain.OrderRepository
-	productService domain.ProductService
-	paymentService domain.PaymentService
+	orderRepo       domain.OrderRepository
+	productProvider domain.ProductProvider
+	paymentService  domain.PaymentService
 }
 
-func NewOrderUseCase(orderRepo domain.OrderRepository, productService domain.ProductService, paymentService domain.PaymentService) *OrderUseCase {
+func NewOrderUseCase(orderRepo domain.OrderRepository, productProvider domain.ProductProvider, paymentService domain.PaymentService) *OrderUseCase {
 	return &OrderUseCase{
-		orderRepo:      orderRepo,
-		productService: productService,
-		paymentService: paymentService,
+		orderRepo:       orderRepo,
+		productProvider: productProvider,
+		paymentService:  paymentService,
 	}
 }
 
@@ -37,7 +37,7 @@ func (s *OrderUseCase) CreateOrder(
 		return domain.Order{}, "", fmt.Errorf("%s: no items", op)
 	}
 
-	orderItems, total, err := calculateOrderItems(ctx, items, s.productService)
+	orderItems, total, err := calculateOrderItems(ctx, items, s.productProvider)
 	if err != nil {
 		return domain.Order{}, "", fmt.Errorf("%s: failed to calculate order items: %w", op, err)
 	}
@@ -48,7 +48,7 @@ func (s *OrderUseCase) CreateOrder(
 		Status:      "pending",
 		Items:       orderItems,
 		TotalAmount: total,
-		CreatedAt:   time.Now(),
+		CreatedAt:   time.Now().UTC(),
 	}
 
 	if err = s.orderRepo.Create(ctx, order); err != nil {
@@ -75,27 +75,47 @@ func (s *OrderUseCase) GetOrderByUUID(ctx context.Context, orderID string) (doma
 func calculateOrderItems(
 	ctx context.Context,
 	items []domain.OrderItemInput,
-	ps domain.ProductService,
+	ps domain.ProductProvider,
 ) ([]domain.OrderItem, float64, error) {
-	const op = "usecase.calculateOrderItems"
+	const op = "orderUseCase.calculateOrderItems"
 
-	orderItems := make([]domain.OrderItem, 0, len(items))
+	productIDs := make([]int64, len(items))
+	for i, item := range items {
+		productIDs[i] = item.ProductID
+	}
+
+	products, err := ps.GetProductsByIDs(ctx, productIDs)
+	if err != nil {
+		return nil, 0, fmt.Errorf("%s: failed to get products info: %w", op, err)
+	}
+
+	// Проверка, что каталог-сервис вернул все запрошенные продукты
+	if len(products) != len(productIDs) {
+		return nil, 0, fmt.Errorf("%s: could not find all requested products", op)
+	}
+
+	productMap := make(map[int64]domain.Product, len(products))
+	for _, p := range products {
+		productMap[p.ID] = p
+	}
+
+	orderItems := make([]domain.OrderItem, len(items))
 	var total float64
-
-	// TODO: Сделать получение батчем
-	for _, item := range items {
-		price, err := ps.GetPrice(ctx, item.ProductID)
-		if err != nil {
-			return nil, 0, fmt.Errorf("%s: failed to get price for product %d: %w", op, item.ProductID, err)
+	for i, item := range items {
+		product, ok := productMap[item.ProductID]
+		if !ok {
+			// Эта проверка на случай, если каталог-сервис вернул не все товары,
+			// что мы уже проверили выше, но это добавляет надежности.
+			return nil, 0, fmt.Errorf("%s: product with id %d not found after batch call", op, item.ProductID)
 		}
 
-		orderItems = append(orderItems, domain.OrderItem{
+		orderItems[i] = domain.OrderItem{
 			ProductID: item.ProductID,
 			Quantity:  item.Quantity,
-			Price:     price,
-		})
+			Price:     product.Price,
+		}
 
-		total += price * float64(item.Quantity)
+		total += product.Price * float64(item.Quantity)
 	}
 
 	return orderItems, total, nil

@@ -3,6 +3,7 @@ module github.com/Wrestler094/scalable-ecommerce-platform/order-service
 go 1.23.0
 
 require (
+	github.com/Wrestler094/scalable-ecommerce-platform/gen/go v0.0.0
 	github.com/Wrestler094/scalable-ecommerce-platform/pkg v0.0.0
 	github.com/caarlos0/env/v11 v11.3.1
 	github.com/go-chi/chi/v5 v5.2.2
@@ -11,9 +12,12 @@ require (
 	github.com/lib/pq v1.10.9
 	github.com/prometheus/client_golang v1.23.0
 	github.com/segmentio/kafka-go v0.4.48
+	google.golang.org/grpc v1.64.1
 )
 
 replace github.com/Wrestler094/scalable-ecommerce-platform/pkg => ../pkg
+
+replace github.com/Wrestler094/scalable-ecommerce-platform/gen/go => ../gen/go
 
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
@@ -38,5 +42,6 @@ require (
 	golang.org/x/net v0.42.0 // indirect
 	golang.org/x/sys v0.34.0 // indirect
 	golang.org/x/text v0.27.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250811230008-5f3141c8851a // indirect
 	google.golang.org/protobuf v1.36.7 // indirect
 )

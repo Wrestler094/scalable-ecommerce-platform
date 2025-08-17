@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Wrestler094/scalable-ecommerce-platform/order-service/internal/infrastructure/client/catalog"
 	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/adapters"
 	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/events"
 	"github.com/Wrestler094/scalable-ecommerce-platform/pkg/healthcheck"
@@ -21,9 +22,8 @@ import (
 	"github.com/Wrestler094/scalable-ecommerce-platform/order-service/internal/delivery/http/infra"
 	"github.com/Wrestler094/scalable-ecommerce-platform/order-service/internal/delivery/http/v1"
 	"github.com/Wrestler094/scalable-ecommerce-platform/order-service/internal/delivery/kafka"
-	paymentmock "github.com/Wrestler094/scalable-ecommerce-platform/order-service/internal/infrastructure/payment/mock"
+	paymentmock "github.com/Wrestler094/scalable-ecommerce-platform/order-service/internal/infrastructure/client/payment/mock"
 	"github.com/Wrestler094/scalable-ecommerce-platform/order-service/internal/infrastructure/postgres"
-	productmock "github.com/Wrestler094/scalable-ecommerce-platform/order-service/internal/infrastructure/product/mock"
 	"github.com/Wrestler094/scalable-ecommerce-platform/order-service/internal/usecase"
 )
 
@@ -54,14 +54,17 @@ func Run(cfg *config.Config) {
 	healthManager := healthcheck.NewManager()
 
 	// Services
-	productService := productmock.NewMockProductService()
 	paymentService := paymentmock.NewMockPaymentService()
+	productProvider, err := catalog.NewClient(context.Background(), cfg.Clients.Catalog)
+	if err != nil {
+		runLogger.WithError(err).Fatal("failed to create catalog service client")
+	}
 
 	// Repositories
 	orderRepo := postgres.NewOrderRepository(pg.DB)
 
 	// Use-Cases
-	orderUseCase := usecase.NewOrderUseCase(orderRepo, productService, paymentService)
+	orderUseCase := usecase.NewOrderUseCase(orderRepo, productProvider, paymentService)
 	paymentUseCase := usecase.NewPaymentUseCase(orderRepo)
 
 	// Handlers

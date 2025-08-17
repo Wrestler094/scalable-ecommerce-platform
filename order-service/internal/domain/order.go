@@ -23,16 +23,6 @@ type Order struct {
 	CreatedAt   time.Time
 }
 
-// Services
-
-type ProductService interface {
-	GetPrice(ctx context.Context, productID int64) (float64, error)
-}
-
-type PaymentService interface {
-	CreatePayment(ctx context.Context, order Order) (string, error)
-}
-
 // UseCases
 
 type OrderItemInput struct {
