@@ -82,7 +82,7 @@ func (h *CategoryHandler) GetProductsByCategoryID(w http.ResponseWriter, r *http
 		return
 	}
 
-	var resp dto.GetProductsByCategoryIDResponse
+	resp := make(dto.GetProductsByCategoryIDResponse, 0)
 	for _, p := range products {
 		resp = append(resp, dto.Product{
 			ID:          p.ID,
