@@ -62,9 +62,14 @@ func (r *productRepository) FindByIDs(ctx context.Context, ids []int64) ([]domai
 
 	query = r.db.Rebind(query)
 
-	var products []domain.Product
-	if err := r.db.SelectContext(ctx, &products, query, args...); err != nil {
+	var rows []dao.ProductRow
+	if err := r.db.SelectContext(ctx, &rows, query, args...); err != nil {
 		return nil, fmt.Errorf("%s: failed to execute query: %w", op, err)
+	}
+
+	products := make([]domain.Product, len(rows))
+	for i, row := range rows {
+		products[i] = mapToDomain(row)
 	}
 
 	return products, nil
